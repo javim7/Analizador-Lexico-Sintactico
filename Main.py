@@ -1,8 +1,11 @@
-from NFA import *
+from AFN import *
 from Regex import *
+from Drawer import *
 from Postfix import *
+from Subsets import *
 from Thompson import *
 from NFADrawer import *
+
 
 if __name__ == '__main__':
     # regexInput = "a+"
@@ -12,6 +15,9 @@ if __name__ == '__main__':
     # regexInput = "a(b*|a)bc*(a|b)*"
     # regexInput = "aa(a|b)*(b|a)bbb"
 
+    '''
+    REGEX
+    '''
     # instanciamos regex
     regularExpression = Regex()
 
@@ -30,6 +36,9 @@ if __name__ == '__main__':
     # si la regex es valida, imprimimos la regex
     print("\nRegex: " + regex)
 
+    '''
+    POSTFIX
+    '''
     # pasamos la regex de infix a postfix
     postfix = Postfix(regex)
     postfix = postfix.infixToPostfix()
@@ -38,16 +47,30 @@ if __name__ == '__main__':
     # instanciamos thompson
     thompson = Thompson(postfix)
 
+    '''
+    NFA
+    '''
     # construimos el afn
     nfa = thompson.nfaConstruction()
-    nfa.print_afn()
-    nfa.afn_info()
-
-    # obtenemos la informacion general del afn
-    transitions = nfa.transitions
-    initial_state = nfa.initial_state
-    final_state = nfa.final_state
+    nfa.print_dfa()
+    nfa.dfa_info()
 
     # dibujamos el afn
-    nfa_drawer = NFADrawer(transitions, initial_state, final_state)
-    nfa_drawer.draw()
+    nfa_drawer = Drawer(nfa.transitions, nfa.initial_state, [nfa.final_state])
+    nfa_drawer.draw(filename='afnDibujado')
+
+    '''
+    NFA TO DFA
+    '''
+    # # instanciamos subsets
+    # subsets = Subsets(nfa)
+
+    # # construimos el afd e imprimimos su informacion
+    # dfa = subsets.dfaConstruction()
+    # dfa.print_dfa()
+    # dfa.dfa_info()
+
+    # # dibujamos el afn
+    # dfa_drawer = Drawer(
+    #     dfa.transitions, dfa.initial_state, dfa.final_states)
+    # dfa_drawer.draw(filename='afdDibujado')

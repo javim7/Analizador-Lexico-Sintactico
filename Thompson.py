@@ -1,5 +1,5 @@
 from Transition import *
-from NFA import *
+from AFN import *
 
 
 class Thompson:

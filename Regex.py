@@ -72,11 +72,8 @@ class Regex:
     funcion para agregarlo los puntos de concatenacion al regex
     '''
 
-    def addDots(self, operatorsList):
+    def addDots(self, operators):
         newRegex = ''  # creamos el nuevo regex vacio
-
-        # hacemos unas listas de los operadores
-        operators = operatorsList
 
         # for para recorrer el regex
         for i in range(len(self.regex)):
