@@ -144,26 +144,29 @@ class Subsets():
         for key, value in self.dfaTransitions.items():
             sorted_key = tuple(sorted(key))
             sorted_value = {}
-            for k, v in value.items():
+            for k, v in value.items():  # for para poder iterar cada llave y valor del diccionario de transiciones
+                # agregamos el valor al diccionario
                 sorted_value[k] = sorted(list(set(v)))
+            # agregamos el valor al diccionario
             sorted_dfaTransitions[sorted_key] = sorted_value
 
-        print("subsetsPorEstado " + str(self.stateSubsets))
-        print("transiciones " + str(self.dfaTransitions))
-        print("transiciones " + str(sorted_dfaTransitions))
+        # print("subsetsPorEstado " + str(self.stateSubsets))
+        # print("transiciones " + str(self.dfaTransitions))
+        # print("transiciones " + str(sorted_dfaTransitions))
 
         # creando un nuevo diccionario para poder asignarle un numero a cada estado
         asignState = {i: key for i, key in enumerate(subsets)}
-        print(asignState)
+        # print(asignState)
 
         # creando un nuevo diccionario para poder sortear los estados de subsets
         new_dict = {}
-        for key, value in asignState.items():
+        for key, value in asignState.items():  # iteramos el diccionario asignado
             sorted_value = tuple(sorted(value))
-            if sorted_value not in new_dict.values():
+            if sorted_value not in new_dict.values():  # si el valor no esta en el diccionario
+                # agregamos el valor al diccionario
                 new_dict[key] = sorted_value
 
-        print("dic2: ", new_dict)
+        # print("dic2: ", new_dict)
 
         # empezando las construcccion del afd
         # informacion basica del afd
@@ -173,25 +176,27 @@ class Subsets():
 
         # iteramos el diccionario sorteado para poder crear las transiciones del afd
         for key, value in sorted_dfaTransitions.items():
-            for k, v in value.items():
-                if v != [None]:
+            for k, v in value.items():  # iteramos cada valor del diccionario
+                if v != [None]:  # si el valor no es null
                     v = tuple(v)
                     for i, j in new_dict.items():
                         sortedJ = tuple(sorted(j))
-                        if j == v or sortedJ == v:
+                        if j == v or sortedJ == v:  # buscamos la llave del valor
                             v = i
-                        if j == key or sortedJ == key:
+                        if j == key or sortedJ == key:  # buscamos la llave del estado
                             key = i
-                    transition = Transition(key, k, v)
+                    transition = Transition(key, k, v)  # creamos la transicion
+                    # agregamos la transicion al afd
                     dfa.transitions.append(transition)
 
         # agregamos los estados finales del afd
         for i, j in self.stateSubsets.items():
-            if self.nfaFinalState in j:
-                for x, y in new_dict.items():
+            if self.nfaFinalState in j:  # si el estado final del afn esta en el eclosure
+                for x, y in new_dict.items():  # buscamos la llave del estado
                     sortedI = tuple(sorted(i))
-                    if y == i or y == sortedI:
+                    if y == i or y == sortedI:  # si el estado es igual al estado del diccionario
                         state = x
+                        # agregamos el estado al afd
                         dfa.final_states.append(state)
 
         # retornamos el afd

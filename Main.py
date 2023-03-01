@@ -10,7 +10,7 @@ from NFADrawer import *
 if __name__ == '__main__':
     # regexInput = "a+"
     # regexInput = "a(a|b)*b"
-    # regexInput = "0?(1?)?0*"
+    # regexInput = "0?(1|ε)?0*"
     # regexInput = "(a|b)*abb"
     # regexInput = "a(b*|a)bc*(a|b)*"
     # regexInput = "aa(a|b)*(b|a)bbb"
@@ -62,15 +62,15 @@ if __name__ == '__main__':
     '''
     NFA TO DFA
     '''
-    # # instanciamos subsets
-    # subsets = Subsets(nfa)
+    # instanciamos subsets
+    subsets = Subsets(nfa)
 
-    # # construimos el afd e imprimimos su informacion
-    # dfa = subsets.dfaConstruction()
-    # dfa.print_dfa()
-    # dfa.dfa_info()
+    # construimos el afd e imprimimos su informacion
+    dfa = subsets.dfaConstruction()
+    dfa.print_dfa()
+    dfa.dfa_info()
 
-    # # dibujamos el afn
-    # dfa_drawer = Drawer(
-    #     dfa.transitions, dfa.initial_state, dfa.final_states)
-    # dfa_drawer.draw(filename='afdDibujado')
+    # dibujamos el afd
+    dfa_drawer = Drawer(
+        dfa.transitions, dfa.initial_state, dfa.final_states)
+    dfa_drawer.draw(filename='afdDibujado')

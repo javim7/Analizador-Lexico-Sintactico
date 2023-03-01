@@ -13,15 +13,17 @@ class DFA:
 
      # imprimiumos las transiciones del afn
     def print_dfa(self):
-        print("\nTransiciones AFD:")
+        print("\n-------AFD-------")
+        print("Transiciones AFD:")
         for transition in self.transitions:
             print(
                 f"[{transition.state}, {transition.symbol}, {transition.next_state}]")
 
      # imprimimos la informacion general del afn
     def dfa_info(self):
-        print(f"\nEstado Inicial: {self.initial_state}")
-        print(f"Estados Finales: {self.final_states}")
+        print("\nInformacion General AFD:")
+        print(f"- Estado Inicial: {self.initial_state}")
+        print(f"- Estados Finales: {self.final_states}")
 
         # lista vacia para ver los estados del afn
         estados = []
@@ -32,4 +34,4 @@ class DFA:
                 estados.append(transition.state)
             if transition.next_state not in estados:
                 estados.append(transition.next_state)
-        print(f"Numero de estados: {len(estados)}")
+        print(f"- Numero de estados: {len(estados)}")
