@@ -1,19 +1,21 @@
-from AFN import *
+from Tree import *
 from Regex import *
 from Drawer import *
 from Postfix import *
 from Subsets import *
 from Thompson import *
-from NFADrawer import *
 
 
 if __name__ == '__main__':
     # regexInput = "a+"
+    # regexInput = "ab*ab*"
     # regexInput = "a(a|b)*b"
-    # regexInput = "0?(1|ε)?0*"
     # regexInput = "(a|b)*abb"
-    # regexInput = "a(b*|a)bc*(a|b)*"
+    # regexInput = "0?(1|ε)?0*"
     # regexInput = "aa(a|b)*(b|a)bbb"
+    # regexInput = "a(b*|a)bc*(a|b)*"
+    # regexInput = "(a|b)*((a|b)|ε)*"
+    # regexInput = "(a|b)*((a|(bb)*)ε)"
 
     '''
     REGEX
@@ -56,8 +58,9 @@ if __name__ == '__main__':
     nfa.dfa_info()
 
     # dibujamos el afn
-    nfa_drawer = Drawer(nfa.transitions, nfa.initial_state, [nfa.final_state])
-    nfa_drawer.draw(filename='afnDibujado')
+    nfa_drawer = Drawer(nfa.transitions, nfa.initial_state,
+                        [nfa.final_state], 'AFN')
+    nfa_drawer.draw(filename='dibujoAFN')
 
     '''
     NFA TO DFA
@@ -66,11 +69,29 @@ if __name__ == '__main__':
     subsets = Subsets(nfa)
 
     # construimos el afd e imprimimos su informacion
-    dfa = subsets.dfaConstruction()
-    dfa.print_dfa()
-    dfa.dfa_info()
+    dfaSubsets = subsets.dfaConstruction()
+    dfaSubsets.print_dfa()
+    dfaSubsets.dfa_info()
 
     # dibujamos el afd
-    dfa_drawer = Drawer(
-        dfa.transitions, dfa.initial_state, dfa.final_states)
-    dfa_drawer.draw(filename='afdDibujado')
+    dfaSubsets_drawer = Drawer(
+        dfaSubsets.transitions, dfaSubsets.initial_state, dfaSubsets.final_states, 'AFD S')
+    dfaSubsets_drawer.draw(filename='dibujoADFSub')
+
+    '''
+    DFA DIRECLY
+    '''
+    tree = Tree(postfix)
+
+    # construimos el afd directo
+    dfaDirect = tree.dfaConstruction()
+    dfaDirect.print_dfa()
+    dfaDirect.dfa_info()
+
+    # for node in tree.nodes:
+    #     print(node)
+
+    # dibujamos el afd
+    dfaDirect_drawer = Drawer(
+        dfaDirect.transitions, dfaDirect.initial_state, dfaDirect.final_states, 'AFD D')
+    dfaDirect_drawer.draw(filename='dibujoADFDir')

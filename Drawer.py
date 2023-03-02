@@ -7,7 +7,7 @@ class Drawer:
     Toma como parametros, las transiciones del afn, su estado inicial y final.
     '''
 
-    def __init__(self, transitions, initial_state, final_states):
+    def __init__(self, transitions, initial_state, final_states, title):
         self.transitions = transitions
         self.initial_state = initial_state
         self.final_states = final_states
@@ -26,6 +26,10 @@ class Drawer:
 
         for final_state in final_states:
             self.graph.node(str(final_state), shape='doublecircle')
+
+        # agregamos el titulo del grafo
+        self.graph.node('title', label=title, shape='none',
+                        fontsize='20', fontcolor='black', fontname='Arial')
 
     '''
     dibujamos el nfa

@@ -25,7 +25,7 @@ class Subsets():
         self.eClosures = []  # lista para ver los eclosures de cada estado
 
     '''
-    funcion para poder obtener los simbolos del afn si contar epsilon.
+    funcion para poder obtener los simbolos del afn sin contar epsilon.
     '''
 
     def symbols(self):

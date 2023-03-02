@@ -6,10 +6,10 @@ class DFA:
     En la clase tambien hay metodos que sirven para poder imprimir el afd y verlo de una manera mas sencilla.
     '''
 
-    def __init__(self, initial_state, final_state):
+    def __init__(self, initial_state, final_states):
         self.transitions = []
         self.initial_state = initial_state
-        self.final_states = []
+        self.final_states = final_states
 
      # imprimiumos las transiciones del afn
     def print_dfa(self):
