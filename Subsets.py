@@ -130,7 +130,7 @@ class Subsets():
     Funcion para construir el afd
     '''
 
-    def dfaConstruction(self):
+    def subDfaConstruction(self):
 
         # llamamos al metodo de transiciones para poder obtener todas las transiciones
         self.dfaAddTransitions(self.nfaInitialState)
@@ -198,6 +198,9 @@ class Subsets():
                         state = x
                         # agregamos el estado al afd
                         dfa.final_states.append(state)
+
+        # agregamos los estados del afd
+        dfa.getStates()
 
         # retornamos el afd
         return dfa

@@ -305,7 +305,7 @@ class Tree():
     funcion para poder crear el adf
     '''
 
-    def dfaConstruction(self):
+    def dirDfaConstruction(self):
         # llamamos al setup
         self.dfaSetup()
 
@@ -335,6 +335,9 @@ class Tree():
                                 # print("nextState: ", nextState)
                         transition = Transition(state, k, nextState)
                         dfa.transitions.append(transition)
+
+        # agregamos los estados del afd
+        dfa.getStates()
 
         # retornamos el automata
         return dfa
