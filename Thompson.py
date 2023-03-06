@@ -1,5 +1,4 @@
-from Transition import *
-from AFN import *
+from Automaton import *
 
 
 class Thompson:

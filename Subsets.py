@@ -1,5 +1,4 @@
-from AFD import *
-from Transition import *
+from Automaton import *
 
 
 class Subsets():
@@ -198,7 +197,8 @@ class Subsets():
                         state = x
                         # agregamos el estado al afd
                         dfa.final_states.append(state)
-
+        # eliminando estados finales repetidos
+        dfa.final_states = list(set(dfa.final_states))
         # agregamos los estados del afd
         dfa.getStates()
 

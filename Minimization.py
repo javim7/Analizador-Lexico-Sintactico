@@ -1,5 +1,4 @@
-from AFD import *
-from Transition import *
+from Automaton import *
 
 
 class Minimization():
@@ -155,9 +154,10 @@ class Minimization():
 
         # llamamos a la funcion para poder obtener la particion inicial
         self.buildInitialPartition()
-
+        # print("partitions1: ", self.partitions)
         # ordenando las particiones por su primer elemento
         self.partitions = sorted(self.partitions, key=lambda x: x[0])
+        # print("partitions2: ", self.partitions)
 
         # agregando el estado inicial al principio de la lista para que su indice sea 0
         # tambien agregamos los estados finales
@@ -172,6 +172,9 @@ class Minimization():
                 if state in partition:
                     estadoNuevo = self.getIndex(state, self.partitions)
                     self.finalStates.append(estadoNuevo)
+
+        # eliminando finales duplicados
+        self.finalStates = list(set(self.finalStates))
 
         # creamos el nuevo afd
         dfa = DFA(self.initialState, self.finalStates)

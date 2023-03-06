@@ -113,11 +113,17 @@ class Regex:
         if '+' in self.regex:
             parts = self.regex.split('.')
             new_parts = []
-            for part in parts:
+            for i, part in enumerate(parts):
                 if '+' in part:
-                    subparts = part.split('+')
-                    new_part = f"{subparts[0]}.{subparts[0]}*"
-                    new_parts.append(new_part)
+                    if '(' in part and ')' in part and part.index('(') < part.index('+') < part.index(')'):
+                        subparts = part[part.index(
+                            '(') + 1:part.index(')')].split('+')
+                        new_part = f"({subparts[0]}.{subparts[0]}*)"
+                        new_parts.append(new_part)
+                    else:
+                        subparts = part.split('+')
+                        new_part = f"{subparts[0]}.{subparts[0]}*"
+                        new_parts.append(new_part)
                 else:
                     new_parts.append(part)
             self.regex = ".".join(new_parts)
