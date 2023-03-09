@@ -58,8 +58,8 @@ class NFA:
     # imprimimos la informacion general del afn
     def dfa_info(self):
         print("\nInformacion General AFN:")
-        print(f"- Estado Inicial : {self.initial_state}")
-        print(f"- Estado Final   : {self.final_state}")
+        print(f"- Estado Inicial: {self.initial_state}")
+        print(f"- Estado Final: {self.final_state}")
 
         # lista vacia para ver los estados del dfa
         estados = []
@@ -113,8 +113,8 @@ class DFA:
      # imprimimos la informacion general del afn
     def dfa_info(self):
         print("\nInformacion General AFD:")
-        print(f"- Estado Inicial  : {self.initial_state}")
-        print(f"- Estados Finales : {self.final_states}")
+        print(f"- Estado Inicial: {self.initial_state}")
+        print(f"- Estados Finales: {self.final_states}")
 
         # lista vacia para ver los estados del afn
         estados = []

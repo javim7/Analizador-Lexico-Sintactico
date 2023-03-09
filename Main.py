@@ -1,4 +1,5 @@
 from Tree import *
+from Table import *
 from Regex import *
 from Drawer import *
 from Subsets import *
@@ -12,16 +13,17 @@ if __name__ == '__main__':
     regexList = [
         "a+",                  # 0
         "ab*ab*",              # 1
-        "a(a|b)*b",            # 2
-        "(a|b)*abb",           # 3
-        "0?(1|ε)?0*",          # 4
-        "aa(a|b)*(b|a)bbb",    # 5
-        "a(b*|a)bc*(a|b)*",    # 6
-        "(a|b)*((a|b)|ε)*",    # 7
-        "(a|b)*((a|(bb)*)ε)",  # 8
-        "(a|ε)b(a+)c?",        # 9
-        "(b|b)*abb(a|b)*",     # 10
-        "(a|b)*a(a|b)(a|b)",   # 11
+        "(a*|b*)c",            # 2
+        "a(a|b)*b",            # 3
+        "(a|b)*abb",           # 4
+        "0?(1|ε)?0*",          # 5
+        "aa(a|b)*(b|a)bbb",    # 6
+        "a(b*|a)bc*(a|b)*",    # 7
+        "(a|b)*((a|b)|ε)*",    # 8
+        "(a|b)*((a|(bb)*)ε)",  # 9
+        "(a|ε)b(a+)c?",        # 10
+        "(b|b)*abb(a|b)*",     # 11
+        "(a|b)*a(a|b)(a|b)",   # 12
     ]
 
     stringList = [
@@ -47,8 +49,9 @@ if __name__ == '__main__':
     # while para ver si la regex inputeada es valida
     while not regularExpression.isValid:
         # pedimos al usuario que ingrese una regex
-        # regexInput = input("\nIngrese un regex, ex. 'a(a|b)*b': ")
-        regularExpression.regex = regexList[9]
+        regexInput = input("\nIngrese un regex, ex. 'a(a|b)*b': ")
+        # regularExpression.regex = regexList[13]
+        regularExpression.regex = regexInput
 
         # verificamos que la regex sea valida
         regex = regularExpression.checkRegex()
@@ -57,8 +60,8 @@ if __name__ == '__main__':
             print(f"\n{regex}")
 
     # input de la cadena a probar
-    # stringInput = input("\nIngrese una cadena a probar, ex. 'abab': ")
-    stringInput = stringList[9]
+    stringInput = input("\nIngrese una cadena a probar, ex. 'abab': ")
+    # stringInput = stringList[1]
 
     # si la regex es valida, imprimimos la regex
     print("\nRegex: " + regex)
@@ -82,6 +85,9 @@ if __name__ == '__main__':
     nfa.print_dfa()
     nfa.dfa_info()
 
+    nfaTable = Table(nfa)
+    print("\n", nfaTable.table)
+
     # dibujamos el afn
     nfa_drawer = Drawer(nfa.transitions, nfa.initial_state,
                         [nfa.final_state], 'AFN')
@@ -97,6 +103,9 @@ if __name__ == '__main__':
     dfaSubsets = subsets.subDfaConstruction()
     dfaSubsets.print_dfa()
     dfaSubsets.dfa_info()
+
+    dfaTable = Table(dfaSubsets)
+    print("\n", dfaTable.table)
 
     # dibujamos el afd
     dfaSubsets_drawer = Drawer(
