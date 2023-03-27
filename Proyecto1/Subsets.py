@@ -1,4 +1,4 @@
-from Automaton import *
+from Proyecto1.Automaton import *
 
 
 class Subsets():

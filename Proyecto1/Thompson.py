@@ -1,4 +1,4 @@
-from Automaton import *
+from Proyecto1.Automaton import *
 
 
 class Thompson:
@@ -165,7 +165,7 @@ class Thompson:
             character = self.postfix[i]
 
             # if para ver si es un simbolo o un operador
-            if character.isalnum():
+            if character not in ['|', '.', '*']:
                 stack.append(self.symbolRule(character))
             else:
                 # if para ver si es un or

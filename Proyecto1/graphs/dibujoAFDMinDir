@@ -1,0 +1,18 @@
+digraph {
+	graph [rankdir=LR]
+	0 -> 0 [label=0]
+	0 -> 0 [label=1]
+	0 -> 0 [label=2]
+	0 -> 0 [label=3]
+	0 -> 0 [label=4]
+	0 -> 0 [label=5]
+	0 -> 0 [label=6]
+	0 -> 0 [label=7]
+	0 -> 0 [label=8]
+	0 -> 0 [label=9]
+	0 [shape=circle style=bold]
+	start [shape=point]
+	start -> 0 [arrowhead=normal]
+	0 [shape=doublecircle]
+	title [label="Min D" fontcolor=black fontname=Arial fontsize=20 shape=none]
+}

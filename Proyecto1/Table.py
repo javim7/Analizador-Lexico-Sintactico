@@ -1,5 +1,4 @@
 from tabulate import tabulate
-from collections import defaultdict
 
 
 class Table():

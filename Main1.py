@@ -1,13 +1,16 @@
-from Tree import *
-from Table import *
-from Regex import *
-from Drawer import *
-from Subsets import *
-from Postfix import *
-from Thompson import *
-from Simulation import *
-from Minimization import *
+from Proyecto1.Tree import *
+from Proyecto1.Table import *
+from Proyecto1.Regex import *
+from Proyecto1.Drawer import *
+from Proyecto1.Subsets import *
+from Proyecto1.Postfix import *
+from Proyecto1.Thompson import *
+from Proyecto1.Simulation import *
+from Proyecto1.Minimization import *
 
+'''
+Programa Main: Encargadro de correr el programa del proyecto 1
+'''
 
 if __name__ == '__main__':
     regexList = [
@@ -24,6 +27,7 @@ if __name__ == '__main__':
         "(a|ε)b(a+)c?",        # 10
         "(b|b)*abb(a|b)*",     # 11
         "(a|b)*a(a|b)(a|b)",   # 12
+        "(0|1|2|3|4|5|6|7|8|9).(0|1|2|3|4|5|6|7|8|9)",   # 13
     ]
 
     stringList = [
@@ -46,23 +50,22 @@ if __name__ == '__main__':
     # instanciamos regex
     regularExpression = Regex()
 
-    # while para ver si la regex inputeada es valida
-    while not regularExpression.isValid:
-        # pedimos al usuario que ingrese una regex
-        regexInput = input("\nIngrese un regex, ex. 'a(a|b)*b': ")
-        # regularExpression.regex = regexList[13]
-        regularExpression.regex = regexInput
 
-        # verificamos que la regex sea valida
-        regex = regularExpression.checkRegex()
-        # if para ver si la regex es falsa e imprimir los errores
-        if not regularExpression.isValid:
-            print(f"\n{regex}")
+    # pedimos al usuario que ingrese una regex
+    # regexInput = input("\nIngrese un regex, ex. 'a(a|b)*b': ")
+    # regularExpression.regex = regexInput descomentar estas lineas para que el usuario ingrese la regex
+    regularExpression.regex = regexList[13]
+
+    # verificamos que la regex sea valida
+    regex = regularExpression.checkRegex()
+    # if para ver si la regex es falsa e imprimir los errores
+    if not regularExpression.isValid:
+        raise Exception(regex)
 
     # input de la cadena a probar
-    stringInput = input("\nIngrese una cadena a probar, ex. 'abab': ")
-    # stringInput = stringList[1]
-
+    # stringInput = input("\nIngrese una cadena a probar, ex. 'abab': ")
+    stringInput = stringList[1]
+    
     # si la regex es valida, imprimimos la regex
     print("\nRegex: " + regex)
 
@@ -91,7 +94,7 @@ if __name__ == '__main__':
     # dibujamos el afn
     nfa_drawer = Drawer(nfa.transitions, nfa.initial_state,
                         [nfa.final_state], 'AFN')
-    nfa_drawer.draw(filename='graphs/dibujoAFN')
+    nfa_drawer.draw(filename='Proyecto1/graphs/dibujoAFN')
 
     '''
     NFA TO DFA
@@ -110,7 +113,7 @@ if __name__ == '__main__':
     # dibujamos el afd
     dfaSubsets_drawer = Drawer(
         dfaSubsets.transitions, dfaSubsets.initial_state, dfaSubsets.final_states, 'AFD S')
-    dfaSubsets_drawer.draw(filename='graphs/dibujoADFSub')
+    dfaSubsets_drawer.draw(filename='Proyecto1/graphs/dibujoADFSub')
 
     '''
     SUBSET DFA MINIMIZATION
@@ -125,7 +128,7 @@ if __name__ == '__main__':
     # dibujamos el afd minimizado
     minDfaSubsets_drawer = Drawer(
         minDfaSubsets.transitions, minDfaSubsets.initial_state, minDfaSubsets.final_states, 'Min S')
-    minDfaSubsets_drawer.draw(filename='graphs/dibujoAFDMinSub')
+    minDfaSubsets_drawer.draw(filename='Proyecto1/graphs/dibujoAFDMinSub')
 
     '''
     DFA DIRECLY
@@ -143,7 +146,7 @@ if __name__ == '__main__':
     # dibujamos el afd
     dfaDirect_drawer = Drawer(
         dfaDirect.transitions, dfaDirect.initial_state, dfaDirect.final_states, 'AFD D')
-    dfaDirect_drawer.draw(filename='graphs/dibujoAFDir')
+    dfaDirect_drawer.draw(filename='Proyecto1/graphs/dibujoAFDir')
 
     '''
     DIRECT DFA MINIMIZATION
@@ -158,7 +161,7 @@ if __name__ == '__main__':
     # dibujamos el afd minimizado
     minDfaDirect_drawer = Drawer(
         minDfaDirect.transitions, minDfaDirect.initial_state, minDfaDirect.final_states, 'Min D')
-    minDfaDirect_drawer.draw(filename='graphs/dibujoAFDMinDir')
+    minDfaDirect_drawer.draw(filename='Proyecto1/graphs/dibujoAFDMinDir')
 
     '''
     SIMULATIONS

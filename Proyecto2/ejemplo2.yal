@@ -1,0 +1,26 @@
+(* Definición de expresiones regulares comunes *)
+let digit = [0-9]
+let letter = [a-zA-Z]
+let whitespace = [ \t\n\r]
+let alphanumeric = letter | digit
+
+(* Definición del punto de entrada y reglas *)
+rule lexer [input] =
+  "if"        { TOK_IF }
+  | "else"      { TOK_ELSE }
+  | "while"     { TOK_WHILE }
+  | "do"        { TOK_DO }
+  | "for"       { TOK_FOR }
+  | "int"       { TOK_INT }
+  | "float"     { TOK_FLOAT }
+  | "double"    { TOK_DOUBLE }
+  | "char"      { TOK_CHAR }
+  | "bool"      { TOK_BOOL }
+  | "true"      { TOK_TRUE }
+  | "false"     { TOK_FALSE }
+  | digit+ '.' digit+ { TOK_FLOATCONST }
+  | digit+         { TOK_INTCONST }
+  | '\'' . '\''   { TOK_CHARCONST }
+  | '\"' ([^\"\n\r\\] | '\\' .)* '\"' { TOK_STRINGCONST }
+  | letter (alphanumeric | '_')* { TOK_IDENT }
+  | whitespace     { skip }

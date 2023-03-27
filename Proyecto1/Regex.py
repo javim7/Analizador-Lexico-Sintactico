@@ -19,7 +19,7 @@ class Regex:
     '''
 
     def checkRegex(self):
-        valid = "^[a-zA-Z0-9()ε+*|?()\\.]*$"  # regex aceptado
+        valid = r"^[a-zA-Z0-9()ε+*|?\s\\.]*$"# regex aceptado
         operators = ['*', '|', '+', '?']  # lista de operadores
 
         # le agregamos los puntos de concatenacion al regex

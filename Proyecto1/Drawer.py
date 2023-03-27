@@ -7,7 +7,7 @@ class Drawer:
     Toma como parametros, las transiciones del afn, su estado inicial y final.
     '''
 
-    def __init__(self, transitions, initial_state, final_states, title):
+    def __init__(self, transitions, initial_state, final_states, title=None):
         self.transitions = transitions
         self.initial_state = initial_state
         self.final_states = final_states
