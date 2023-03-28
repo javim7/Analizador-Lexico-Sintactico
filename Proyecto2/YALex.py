@@ -15,14 +15,28 @@ class YALex:
             self.regexFinalList = []
             self.updatedList = []
             self.regex_dict = {}
+            self.identDict = {}
             self.erros = False
             self.dfaList = []
             self.nfaList = []
+            self.megaDFA = None
             self.megaRegex = ''
+            self.tokens = {
+                '+': '@',
+                '*': '!',
+                '.': ',',
+                '(': '[',
+                ')': ']',
+            }
         except FileNotFoundError:
             raise Exception('File could not be opened')
    
     def compiler(self):
+
+        #eliminando comillas
+        for i in range(len(self.lines)):
+            self.lines[i] = self.lines[i].replace("'", "")
+
         # detectamos errores
         errores = self.detect_errors()
 
@@ -35,18 +49,20 @@ class YALex:
 
         # print(self.regexFinalList)
         self.updatedList = self.getUpdatedList()
-        # print(self.updatedList)
+        print("\nQUINTA LISTA - Regexes con Identidades:")
+        print(self.updatedList)
 
         self.megaRegex = '|'.join([ x  for x in self.updatedList])
-
+        
+        print("\nMEGA REGEX - Todos los regex juntos:")
         print(self.megaRegex)
-        self.buildDFA()
+        self.megaDFA = self.buildDFA()
 
     def detect_errors(self):
         stack = []
-        rule_list = []
+        yaSonRules = False
         for i, line in enumerate(self.lines):
-            # print( i, line)
+            print( i+1, line)
             # Check parentheses and curly braces are balanced and in correct order
             for c in line:
                 if c == '(':
@@ -64,7 +80,7 @@ class YALex:
                 elif c == '}':
                     if not stack or stack[-2] != '{':
                         self.erros = True
-                        return "'}' desbalanceado en la linea: " + i+1
+                        return "'}' desbalanceado en la linea: " + str(i+1)
                     stack.pop()
                     stack.pop()
             # Check import statements are correctly formatted
@@ -74,26 +90,26 @@ class YALex:
                     return f"Formato incorrecto de 'import' en la linea: {i+1}"
             # Check let statements are correctly formatted
             if line.startswith("let"):
-                if rule_list:
+                if yaSonRules:
                     self.erros = True
-                    return f"'let' despues de 'rule' en la linea: {i+1}"
+                    return f"'let' en seccion erronea: {i+1}"
                 if '=' not in line:
                     self.erros = True
                     return f"Formato incorrecto de 'let' en la linea: {i+1}"
-                if not re.search(r'let\s+[a-zA-Z0-9_]+\s*=\s*\".*\"\s*[\+\-\/\*]?[\s]*[a-zA-Z0-9_]*\S', line):
-                    self.errors = True
+                if not re.search(r'let\s+[a-zA-Z][a-zA-Z0-9]*\s*=\s*.+', line):
+                    self.erros = True
                     return f"Formato incorrecto de 'let' en la linea: {i+1}"
             # Check rule statements are correctly formatted
             if line.startswith("rule"):
+                yaSonRules = True
                 if '=' not in line:
                     self.erros = True
                     return f"Formato incorrecto de 'rule' en la linea: {i+1}"
                 if not re.search(r'rule\s+[a-zA-Z0-9_]+\s*(\[[a-zA-Z0-9_, ]+\])?\s*=\s*\n', line):
                     self.erros = True
                     return f"Formato incorrecto de 'rule' en la linea: {i+1}"
-                rule_list.append(line.strip().split()[1])
             if '=' in line:
-                if not line.startswith("rule") and not line.startswith("let"):
+                if not line.startswith("rule") and not line.startswith("let") and yaSonRules == False:
                     self.erros = True
                     return f"Formato incorrecto de variable en la linea: {i+1}"
         if stack:
@@ -111,13 +127,23 @@ class YALex:
             if match:
                 self.regex_dict[match.group(1)] = match.group(2)
             if line.startswith("rule"):
-                for j, sub_line in enumerate(self.lines[i+1:]):
-                      # Remove comments enclosed in '(**)'
-                    sub_line = re.sub(r'\(\*.*?\*\)', '', sub_line)
                 for j,sub_line in enumerate(self.lines[i+1:]):
+                      # Remove comments enclosed in '(**)'
+                    # sub_line = re.sub(r'\(\*.*?\*\)', '', sub_line)
                     sub_line = sub_line.lstrip()
+
                     if sub_line.startswith("(*") and re.search(r"\*\)$", sub_line):
                         continue  # skip to next iteration if line is a comment
+                    
+                    # check if the line has curly braces '{}'
+                    if "{" in sub_line and "}" in sub_line:
+                        # extract the content inside the curly braces
+                        brace_content = re.search(r'\{(.+?)\}', sub_line).group(1)
+                        # use the content inside the braces as the key in the dictionary
+                        self.identDict[brace_content] = ""
+                        # remove the content inside the braces from the line
+                        sub_line = re.sub(r'\{.*?\}', '', sub_line)
+                    
                     regex = ""
                      # Remove comments enclosed in '(**)'
                     sub_line = re.sub(r'\(\*.*?\*\)', '', sub_line)
@@ -128,6 +154,9 @@ class YALex:
                             sub_line = sub_line[1:].lstrip()
                         regex += sub_line
                         self.regex_list.append(regex.strip())
+                        if brace_content:
+                            self.identDict[brace_content] = regex.strip()
+                            brace_content = None
                     else:
                         if sub_line.startswith("|"):
                             # Remove actions enclosed in '{}'
@@ -135,8 +164,18 @@ class YALex:
                             regex += sub_line.strip()[1:]
                             self.regex_list.append(regex.strip())
                             # print(f"Found regex: {regex}")
+                            if brace_content:
+                                self.identDict[brace_content] = regex.strip()
+                                brace_content = None
                         else:
                             break
+
+        print("\nDICCIONARIO IDENT - Identificacion de los tokens:")
+        print(self.identDict)
+        
+        self.regex_list = [x.replace(' ', '') for x in self.regex_list]
+        print("\nPRIMERA LISTA - Regexes Originales:")
+        print(self.regex_list)
         
         for key in reversed(list(self.regex_dict.keys())):
             value = self.regex_dict[key]
@@ -144,6 +183,7 @@ class YALex:
                 if inner_key in value:
                     value = value.replace(inner_key, inner_value)
             self.regex_dict[key] = value
+
 
         for i in range(len(self.regex_list)):
             for key in self.regex_dict.keys():
@@ -153,8 +193,22 @@ class YALex:
                         list2[j] = list2[j].replace(key, self.regex_dict[key]) 
                 self.regex_list[i] = " ".join(list2)
 
+        # print("\nDICCIONARIO REGEX - Regexes con sus valores originales:")
         # print(self.regex_dict)
-        # print(self.regex_list)
+
+        print("\nSEGUNDA LISTA - Regexes Con valor Original:")
+        print(self.regex_list)
+
+        for i in range(len(self.regex_list)):
+            if self.regex_list[i] in self.tokens.keys():
+                self.regex_list[i] = self.tokens[self.regex_list[i]]
+            if '.' in self.regex_list[i]:
+                self.regex_list[i] = self.regex_list[i].replace('.', ',')
+
+
+        print("\nTERCERA LISTA - Regexes Con Tokens Reemplazados:")
+        print(self.regex_list)
+
         return self.regex_list
     
     def modifyRegexes(self):
@@ -163,22 +217,29 @@ class YALex:
             # print(regex)
             # Modify [0-9]+ to (0|1|2|3|4|5|6|7|8|9)+
             regex = re.sub(r'\[0-9\]', '(0|1|2|3|4|5|6|7|8|9)', regex)
-            
+            regex = re.sub(r"\['0'-'9'\]", '(0|1|2|3|4|5|6|7|8|9)', regex)
+
             # Modify [a-z] to (a|b|c|...|z)
             regex = re.sub(r'\[a-z\]', '(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)', regex)
+            regex = re.sub(r"\['a'-'z'\]", '(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)', regex)
+
 
             # Modify [a-zA-Z] to (a|b|c|...|Z)
             regex = re.sub(r'\[a-zA-Z\]', '(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z)', regex)
+            regex = re.sub(r"\['a'-'z''A'-'Z'\]", '(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z)', regex)
             
             # Modify [ \t\n\r] to ( |\t|\n\r)
             regex = re.sub(r'\[ \\t\\n\\r\]', '( |\t|\n|\r)', regex)
-            
-            # Modify [ \t\n\r] to ( |\t|\n\r)
+            regex = re.sub(r'\[ \\t\\n\]', '( |\t|\n)', regex)
+            regex = re.sub(r'\[\\t\\n\]', '( |\t|\n)', regex)
             regex = re.sub(r'\[\\t\\n\\r\]', '(\t|\n|\r)', regex)
+            regex = re.sub(r"\[' ''\\t''\\n'\]", '( |\t|\n)', regex)
+            
             
             self.regexFinalList.append(regex)
 
-        # print(self.regexFinalList)
+        print("\nCUARTA LISTA - Regexes Modificados:")
+        print(self.regexFinalList)
         return self.regexFinalList
     
     def getUpdatedList(self):
@@ -209,12 +270,24 @@ class YALex:
         postfix = postfix.infixToPostfix()
         print("\nPostfix:\n"+postfix)
 
+
         tree = Tree(postfix)
         megaDFA = tree.dirDfaConstruction()
-        
-        # megaDFA_drawer = Drawer(
-        # megaDFA.transitions, megaDFA.initial_state, megaDFA.final_states)
-        # megaDFA_drawer.draw(filename='Proyecto2/graphs/megaAutomata')
-        
-        directSim = DFASimulation(megaDFA, 'abc352')
+
+        reverse_tokens = {v: k for k, v in self.tokens.items()}  # reverse the keys and values in the dictionary
+        for transition in megaDFA.transitions:
+            # print(transition)
+            if transition.symbol in reverse_tokens.keys():
+                transition.symbol = reverse_tokens[transition.symbol]
+            if transition.symbol == ',':
+                transition.symbol = '.'
+       
+        megaDFA_drawer = Drawer(
+        megaDFA.transitions, megaDFA.initial_state, megaDFA.final_states)
+        megaDFA_drawer.draw(filename='Proyecto2/graphs/megaAutomata')
+
+        directSim = DFASimulation(megaDFA, '-646.64')
         print("AFD D  --> " + str(directSim.simulate()))
+
+
+        return megaDFA

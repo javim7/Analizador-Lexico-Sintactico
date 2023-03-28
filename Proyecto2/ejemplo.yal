@@ -3,8 +3,7 @@
 import myToken
 }
 rule gettoken = 
-    [' ' '\t'] { return lexbuf } (* skip blanks *)
-    | ['\n' ] { return EOL }
+    [' ''\t''\n'] { return lexbuf } (* skip blanks *)
     | ['0'-'9']+ { return int(lxm) }
     | '+' { return PLUS }
     | '-' { return MINUS }

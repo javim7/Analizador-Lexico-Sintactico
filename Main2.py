@@ -14,10 +14,11 @@ if __name__ == '__main__':
         "yalex ejemplo.yal -o thelexer.py",  #0
         "yalex ejemplo2.yal -o thelexer.py", #1
         "yalex ejemplo3.yal -o thelexer.py", #2
+        "yalex ejemplo4.yal -o thelexer.py", #3
     ]
 
     #obtenemos la informacion del comando
-    commandInfo = commands[2].split(" ")
+    commandInfo = commands[3].split(" ")
     yalFile = 'Proyecto2/' + commandInfo[1]
     fileToGenerate = commandInfo[3]
 

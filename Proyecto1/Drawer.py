@@ -28,7 +28,8 @@ class Drawer:
             self.graph.node(str(final_state), shape='doublecircle')
 
         # agregamos el titulo del grafo
-        self.graph.node('title', label=title, shape='none',
+        if title:
+            self.graph.node('title', label=title, shape='none',
                         fontsize='20', fontcolor='black', fontname='Arial')
 
     '''

@@ -11,10 +11,10 @@ rule main [input] =
     (* matching letters *)
     | letter+ { printf("LETTER: %s\n", yytext); }
     (* matching floats *)
-    (*| digit+ "." digit+ { printf("FLOAT: %s\n", yytext); }*)
+    | digit+.digit+ { printf("FLOAT: %s\n", yytext); }
     (* matching IDs *)
     | letter(letter|digit)* { printf("ID: %s\n", yytext); }
-    (*| whitespace*)
+    | whitespace
 
 {
     (* trailer section *)

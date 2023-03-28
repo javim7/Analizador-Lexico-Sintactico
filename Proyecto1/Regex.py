@@ -19,9 +19,10 @@ class Regex:
     '''
 
     def checkRegex(self):
-        valid = r"^[a-zA-Z0-9()ε+*|?\s\\.]*$"# regex aceptado
+        valid = r"^[a-zA-Z0-9()ε+*\'-|%,!&^_:;@#/=?\s\\.]*$"
         operators = ['*', '|', '+', '?']  # lista de operadores
 
+        # self.regex = self.regex.replace("'", "")  
         # le agregamos los puntos de concatenacion al regex
         self.regex = self.addDots(operators)
 
@@ -30,14 +31,14 @@ class Regex:
         matcher = pattern.match(self.regex)
 
         # para ver si hay dos puntos seguidos
-        last_was_dot = False
-        for c in self.regex:
-            if c == '.':
-                if last_was_dot:
-                    return 'Error en la expresión regular ingresada. No se puede tener 2 puntos seguidos.'
-                last_was_dot = True
-            else:
-                last_was_dot = False
+        # last_was_dot = False
+        # for c in self.regex:
+        #     if c == '.':
+        #         if last_was_dot:
+        #             return 'Error en la expresión regular ingresada. No se puede tener 2 puntos seguidos.'
+        #         last_was_dot = True
+        #     else:
+        #         last_was_dot = False
         # for para ver si hay 2 operadores seguidos
         last_was_operator = False
         for c in self.regex:
@@ -49,13 +50,13 @@ class Regex:
                 last_was_operator = False
 
         # ifs para ver que errores tiene el regex
-        if not self.regex[0].isalnum() and self.regex[0] != '(':
-            self.isValid = False
-            return self.getOperatorErrors()
+        # if not self.regex[0].isalnum() and self.regex[0] not in ['(', '-', "'"]:
+        #     self.isValid = False
+        #     return self.getOperatorErrors()
 
-        if not matcher:
-            self.isValid = False
-            return self.getSyntaxErrors()
+        # if not matcher:
+        #     self.isValid = False
+        #     return self.getSyntaxErrors()
 
         if '(' in self.regex or ')' in self.regex:
             self.isValid = False
@@ -110,7 +111,7 @@ class Regex:
             self.regex = ".".join(parts)
 
         # modificamos el regex para que no tenga +
-        if '+' in self.regex:
+        if '+' in self.regex and len(self.regex) > 1:
             parts = self.regex.split('.')
             new_parts = []
             for i, part in enumerate(parts):

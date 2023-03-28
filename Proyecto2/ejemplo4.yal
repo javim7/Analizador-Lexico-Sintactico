@@ -1,0 +1,18 @@
+(* Ejemplo básico *)
+
+let delimitador = [' ''\t''\n']
+let espacioEnBlanco = delimitador+
+let digito = ['0'-'9']
+let numero = '-'?digito+
+let letra = ['a'-'z''A'-'Z']
+let identificador = letra(letra|digito)*
+let float = '-'?digito+.digito+
+
+rule tokens  =
+	espacioEnBlanco	{print("whitespace")}
+  | identificador	{ print("Identificador\n") }
+  | numero			{ print("Número\n") }
+  | float      {print("Float\n")}
+  | '+'				{ print("Operador de suma\n") }
+  | '*'				{ print("Operador de multiplicación\n") }
+  | '='				{ print("Operador de asignación\n") }

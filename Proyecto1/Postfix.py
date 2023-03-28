@@ -40,7 +40,7 @@ class Postfix:
             c = self.infix[i]
 
             # si es un operando lo agregamos al postfix
-            if c.isalnum():
+            if c not in ['|', '.', '*', '(', ')']:
                 postfix += c
             # si es un parentesis izquierdo lo agregamos a la pila
             elif c == '(':

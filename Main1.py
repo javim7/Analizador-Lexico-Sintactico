@@ -27,7 +27,8 @@ if __name__ == '__main__':
         "(a|ε)b(a+)c?",        # 10
         "(b|b)*abb(a|b)*",     # 11
         "(a|b)*a(a|b)(a|b)",   # 12
-        "(0|1|2|3|4|5|6|7|8|9).(0|1|2|3|4|5|6|7|8|9)",   # 13
+        "-(0|1|2|3|4|5|6|7|8|9)+",   # 13
+        "-?(0|1|2|3|4|5|6|7|8|9)+",   # 14
     ]
 
     stringList = [
@@ -42,6 +43,7 @@ if __name__ == '__main__':
         "ba",                # 8
         "baaaac",            # 9
         "abba",              # 10
+        "-6546",              # 11
     ]
 
     '''
@@ -54,7 +56,7 @@ if __name__ == '__main__':
     # pedimos al usuario que ingrese una regex
     # regexInput = input("\nIngrese un regex, ex. 'a(a|b)*b': ")
     # regularExpression.regex = regexInput descomentar estas lineas para que el usuario ingrese la regex
-    regularExpression.regex = regexList[13]
+    regularExpression.regex = regexList[14]
 
     # verificamos que la regex sea valida
     regex = regularExpression.checkRegex()
@@ -64,7 +66,8 @@ if __name__ == '__main__':
 
     # input de la cadena a probar
     # stringInput = input("\nIngrese una cadena a probar, ex. 'abab': ")
-    stringInput = stringList[1]
+    stringInput = stringList[11]
+    
     
     # si la regex es valida, imprimimos la regex
     print("\nRegex: " + regex)
@@ -89,7 +92,8 @@ if __name__ == '__main__':
     nfa.dfa_info()
 
     nfaTable = Table(nfa)
-    print("\n", nfaTable.table)
+    # print("\n", nfaTable.table)
+
 
     # dibujamos el afn
     nfa_drawer = Drawer(nfa.transitions, nfa.initial_state,
@@ -108,7 +112,7 @@ if __name__ == '__main__':
     dfaSubsets.dfa_info()
 
     dfaTable = Table(dfaSubsets)
-    print("\n", dfaTable.table)
+    # print("\n", dfaTable.table)
 
     # dibujamos el afd
     dfaSubsets_drawer = Drawer(
