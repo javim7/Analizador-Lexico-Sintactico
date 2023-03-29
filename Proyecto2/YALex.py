@@ -16,7 +16,8 @@ class YALex:
             self.updatedList = []
             self.regex_dict = {}
             self.identDict = {}
-            self.erros = False
+            self.errors = False
+            self.errosList = []
             self.dfaList = []
             self.nfaList = []
             self.megaDFA = None
@@ -41,8 +42,9 @@ class YALex:
         errores = self.detect_errors()
 
         # si hay errores, los mostramos, de lo contrario, continuamos
-        if self.erros:
-            raise Exception(errores)
+        if self.errors:
+            errores_str = "\n".join(set(errores))
+            raise Exception(errores_str)
         
         self.getRegexes()
         self.modifyRegexes()
@@ -61,8 +63,8 @@ class YALex:
     def detect_errors(self):
         stack = []
         yaSonRules = False
+        self.errorsList = []
         for i, line in enumerate(self.lines):
-            print( i+1, line)
             # Check parentheses and curly braces are balanced and in correct order
             for c in line:
                 if c == '(':
@@ -70,8 +72,7 @@ class YALex:
                     stack.append(i)
                 elif c == ')':
                     if not stack or stack[-2] != '(':
-                        self.erros = True
-                        return f"')' desbalanceado en la linea: {i+1}"
+                        self.errorsList.append(f"')' desbalanceado en la linea: {i+1}")
                     stack.pop()
                     stack.pop()
                 elif c == '{':
@@ -79,42 +80,36 @@ class YALex:
                     stack.append(i)
                 elif c == '}':
                     if not stack or stack[-2] != '{':
-                        self.erros = True
-                        return "'}' desbalanceado en la linea: " + str(i+1)
+                        self.errorsList.append(f"'}}' desbalanceado en la linea: {i+1}")
                     stack.pop()
                     stack.pop()
             # Check import statements are correctly formatted
             if line.startswith("import"):
                 if not re.search(r'import\s+[a-zA-Z0-9_]+\s*', line):
-                    self.erros = True
-                    return f"Formato incorrecto de 'import' en la linea: {i+1}"
+                    self.errorsList.append(f"Formato incorrecto de 'import' en la linea: {i+1}")
             # Check let statements are correctly formatted
             if line.startswith("let"):
                 if yaSonRules:
-                    self.erros = True
-                    return f"'let' en seccion erronea: {i+1}"
+                    self.errorsList.append(f"'let' en seccion erronea: {i+1}")
                 if '=' not in line:
-                    self.erros = True
-                    return f"Formato incorrecto de 'let' en la linea: {i+1}"
+                    self.errorsList.append(f"Formato incorrecto de 'let' en la linea: {i+1}")
                 if not re.search(r'let\s+[a-zA-Z][a-zA-Z0-9]*\s*=\s*.+', line):
-                    self.erros = True
-                    return f"Formato incorrecto de 'let' en la linea: {i+1}"
+                    self.errorsList.append(f"Formato incorrecto de 'let' en la linea: {i+1}")
             # Check rule statements are correctly formatted
             if line.startswith("rule"):
                 yaSonRules = True
                 if '=' not in line:
-                    self.erros = True
-                    return f"Formato incorrecto de 'rule' en la linea: {i+1}"
+                    self.errorsList.append(f"Formato incorrecto de 'rule' en la linea: {i+1}")
                 if not re.search(r'rule\s+[a-zA-Z0-9_]+\s*(\[[a-zA-Z0-9_, ]+\])?\s*=\s*\n', line):
-                    self.erros = True
-                    return f"Formato incorrecto de 'rule' en la linea: {i+1}"
+                    self.errorsList.append(f"Formato incorrecto de 'rule' en la linea: {i+1}")
             if '=' in line:
                 if not line.startswith("rule") and not line.startswith("let") and yaSonRules == False:
-                    self.erros = True
-                    return f"Formato incorrecto de variable en la linea: {i+1}"
+                    self.errorsList.append(f"Formato incorrecto de variable en la linea: {i+1}")
         if stack:
-            self.erros = True
-            return f"'{stack[-2]}' desbalanceado en la linea: {str(stack[-1]+1)}"
+            self.errorsList.append(f"'{stack[-2]}' desbalanceado en la linea: {str(stack[-1]+1)}")
+        if self.errorsList:
+            self.errors = True
+            return self.errorsList
         return None
 
 
