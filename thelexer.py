@@ -8,7 +8,7 @@ yalex.compiler()
 def main():
 
     #input del archivo de entrada
-    archivo = input('Ingrese el nombre del archivo de entrada: ')
+    archivo = input('\nIngrese el nombre del archivo de entrada: ')
 
     #creamos la variable del archivo
     texto = 'Inputs/'+archivo+'.txt'
@@ -19,12 +19,14 @@ def main():
     #leemos el archivo de texto
     with open(texto, 'r') as file:  
         data = file.read()
-
+    
+    words = data.split()
     #obtenemos la informacion del mega Automata
     megaAFD = yalex.megaDFA
 
     #mandamos a llamar al analizador lexico
     analizadorLexico(data, megaAFD)
+    analizadorLexico2(words)
 
 def analizadorLexico(data, megaAFD):
 
@@ -50,7 +52,6 @@ def analizadorLexico(data, megaAFD):
 
         if symbol == "\n":
             line_num += 1
-
         # buscar la transicion
         foundTransition = False
         for transition in transitions:
@@ -59,7 +60,7 @@ def analizadorLexico(data, megaAFD):
                 lexema += symbol
                 foundTransition = True
                 break
-
+        
         if not foundTransition:
             if actualState in finalStates:
                 lexemas.append(lexema)
@@ -111,6 +112,63 @@ def analizadorLexico(data, megaAFD):
             formatted_lex = lex.ljust(max_lex_len)
             tokens[i] = tokens[i].replace('print("', f'print("{formatted_lex} -> ')
             eval(tokens[i].strip())
+
+
+def analizadorLexico2(data):
+
+    # obtain the list of tokens
+    listOfTokens = yalex.identDict
+    keyTokenList = list(listOfTokens.keys())
+
+    # obtain the AFDs of each token
+    afdList = yalex.getAFDs(yalex.updatedList)
+    tokens = []
+    errores = []
+
+    line_number = 1
+    position_number = 0
+
+    for word in data:
+        # Update position number and line number for each word
+        position_number += 1
+        if '\n' in word:
+            line_number += 1
+            position_number = 0
+
+        for i, afd in enumerate(afdList):
+            if yalex.simulateAFD(afd, word):
+                tokens.append(keyTokenList[i])
+
+        if not yalex.isValidToken(word):
+            if len(word) == 1:
+                errores.append(f"Error lexico en la linea {line_number}, posicion {position_number}: caracter '{word}' no reconocido.")
+            else:
+                errores.append(f"Error lexico en la linea {line_number}, posicion {position_number}: token '{word}' no reconocido.")
+
+    if not errores:
+        print('\n-------ANALISIS LEXICO EXITOSO-------')
+        max_lex_len = max(len(lex.strip()) for lex in data)
+        for i, word in enumerate(data):
+            # Remove white spaces from word
+            word = word.strip()
+
+            if word == '':
+                continue
+
+            # Update position number and line number for each word
+            position_number += 1
+            if '\n' in word:
+                line_number += 1
+                position_number = 0
+
+            formatted_word = word.ljust(max_lex_len)
+            tokens[i] = tokens[i].replace('print("', f'print("{formatted_word} -> ')
+            eval(tokens[i].strip())
+    else:
+        print('\n---ANALISIS LEXICO FALLIDO---')
+        for error in errores:
+            print(error)
+
 
 if __name__ == '__main__':
     main()
