@@ -1,15 +1,17 @@
 import re
-from Proyecto1.Tree import *
-from Proyecto1.Regex import *
-from Proyecto1.Drawer import *
-from Proyecto1.Postfix import *
-from Proyecto1.Thompson import *
-from Proyecto1.Simulation import *
+from Tree import *
+from Regex import *
+from Drawer import *
+from Postfix import *
+from Thompson import *
+from Simulation import *
 
 class YALex:
-    def __init__(self, filename):
+    def __init__(self, filename, outputname=None):
         try:
+            self.filename = filename
             self.file = open(filename, 'r')
+            self.outputname = outputname
             self.lines = self.file.readlines()
             self.regex_list = []
             self.regexFinalList = []
@@ -34,31 +36,37 @@ class YALex:
    
     def compiler(self):
 
-        #eliminando comillas
-        for i in range(len(self.lines)):
-            self.lines[i] = self.lines[i].replace("'", "")
+        if self.outputname == None:
+            #eliminando comillas
+            for i in range(len(self.lines)):
+                self.lines[i] = self.lines[i].replace("'", "")
 
-        # detectamos errores
-        errores = self.detect_errors()
+            # detectamos errores
+            errores = self.detect_errors()
 
-        # si hay errores, los mostramos, de lo contrario, continuamos
-        if self.errors:
-            errores_str = "\n".join(set(errores))
-            raise Exception(errores_str)
+            # si hay errores, los mostramos, de lo contrario, continuamos
+            if self.errors:
+                errores_str = "\n".join(set(errores))
+                raise Exception(errores_str)
+            
+            self.getRegexes()
+            self.modifyRegexes()
+
+            # print(self.regexFinalList)
+            self.updatedList = self.getUpdatedList()
+            print("\nQUINTA LISTA - Regexes con Identidades:")
+            print(self.updatedList)
+
+            self.megaRegex = '|'.join([ x  for x in self.updatedList])
+            
+            print("\nMEGA REGEX - Todos los regex juntos:")
+            print(self.megaRegex)
+            self.megaDFA = self.buildDFA()
+            # self.megaDFA.print_dfa()
+            # self.megaDFA.dfa_info()
         
-        self.getRegexes()
-        self.modifyRegexes()
-
-        # print(self.regexFinalList)
-        self.updatedList = self.getUpdatedList()
-        print("\nQUINTA LISTA - Regexes con Identidades:")
-        print(self.updatedList)
-
-        self.megaRegex = '|'.join([ x  for x in self.updatedList])
-        
-        print("\nMEGA REGEX - Todos los regex juntos:")
-        print(self.megaRegex)
-        self.megaDFA = self.buildDFA()
+        if self.outputname:
+            self.generateOutput(self.outputname)
 
     def detect_errors(self):
         stack = []
@@ -188,8 +196,8 @@ class YALex:
                         list2[j] = list2[j].replace(key, self.regex_dict[key]) 
                 self.regex_list[i] = " ".join(list2)
 
-        # print("\nDICCIONARIO REGEX - Regexes con sus valores originales:")
-        # print(self.regex_dict)
+        print("\nDICCIONARIO REGEX - Regexes con sus valores originales:")
+        print(self.regex_dict)
 
         print("\nSEGUNDA LISTA - Regexes Con valor Original:")
         print(self.regex_list)
@@ -237,6 +245,33 @@ class YALex:
         print(self.regexFinalList)
         return self.regexFinalList
     
+    def getAFDs(self, list):
+        afdList = []
+        for regex in self.updatedList:
+            postfix = Postfix(regex)
+            postfix = postfix.infixToPostfix()
+
+            tree = Tree(postfix)
+            afd = tree.dirDfaConstruction()
+            afdList.append(afd)
+
+        for afd in afdList:
+            reverse_tokens = {v: k for k, v in self.tokens.items()}  # reverse the keys and values in the dictionary
+            for transition in afd.transitions:
+                # print(transition)
+                if transition.symbol in reverse_tokens.keys():
+                    transition.symbol = reverse_tokens[transition.symbol]
+                if transition.symbol == ',':
+                    transition.symbol = '.'
+
+        return afdList
+    
+    def simulateAFD(self, afd, token):
+        simulation = DFASimulation(afd, token)
+        # print(f"{token}  --> " + str(simulation.simulate()))
+        return simulation.simulate()
+            
+
     def getUpdatedList(self):
         newList = []
         for regex in self.regexFinalList:
@@ -257,7 +292,7 @@ class YALex:
             megaRegex += regex + "|"
         megaRegex = megaRegex[:-1]
         megaRegex = "(" + megaRegex + ")"
-        print(megaRegex)
+        # print(megaRegex)
         return megaRegex
 
     def buildDFA(self):
@@ -277,12 +312,134 @@ class YALex:
             if transition.symbol == ',':
                 transition.symbol = '.'
        
-        megaDFA_drawer = Drawer(
-        megaDFA.transitions, megaDFA.initial_state, megaDFA.final_states)
-        megaDFA_drawer.draw(filename='Proyecto2/graphs/megaAutomata')
+        # megaDFA_drawer = Drawer(
+        # megaDFA.transitions, megaDFA.initial_state, megaDFA.final_states)
+        # megaDFA_drawer.draw(filename='graphs/megaAutomata')
 
-        directSim = DFASimulation(megaDFA, '-646.64')
-        print("AFD D  --> " + str(directSim.simulate()))
+        # directSim = DFASimulation(megaDFA, '-646.64')
+        # print("AFD D  --> " + str(directSim.simulate()))
 
 
         return megaDFA
+    
+    def generateOutput(self, outputName):
+        pythonCode = f"""#importamos la clase de Yalex para poder obtener toda su informacion
+from YALex import *
+
+#creamos el objeto de la clase YALex y compilamos el archivo
+yalex = YALex('{self.filename}')
+yalex.compiler()
+
+def main():
+
+    #input del archivo de entrada
+    archivo = input('Ingrese el nombre del archivo de entrada: ')
+
+    #creamos la variable del archivo
+    texto = 'Inputs/'+archivo+'.txt'
+
+    #creamos la variable del archivo
+    # texto = 'Inputs/texto.txt'
+
+    #leemos el archivo de texto
+    with open(texto, 'r') as file:  
+        data = file.read()
+
+    #obtenemos la informacion del mega Automata
+    megaAFD = yalex.megaDFA
+
+    #mandamos a llamar al analizador lexico
+    analizadorLexico(data, megaAFD)
+
+def analizadorLexico(data, megaAFD):
+
+    # obtain the list of tokens
+    listOfTokens = yalex.identDict
+    keyTokenList = list(listOfTokens.keys())
+
+    # obtain the AFDs of each token
+    afdList = yalex.getAFDs(yalex.updatedList)
+
+    transitions = megaAFD.transitions
+    finalStates = megaAFD.final_states
+    pos = 0
+    line_num = 1
+    actualState = 0
+    lexema = ''
+    lexemas = []
+    tokens = []
+    errores = []
+
+    while pos < len(data):
+        symbol = data[pos]
+
+        if symbol == "\\n":
+            line_num += 1
+
+        # buscar la transicion
+        foundTransition = False
+        for transition in transitions:
+            if transition.state == actualState and transition.symbol == symbol:
+                actualState = transition.next_state
+                lexema += symbol
+                foundTransition = True
+                break
+
+        if not foundTransition:
+            if actualState in finalStates:
+                lexemas.append(lexema)
+                lexema = ''
+                actualState = 0
+            else:
+                # print line_num and pos+1 in error message
+                if len(lexema) == 1:
+                    errores.append('Error lexico en la linea ' + str(line_num) + ', posicion '+ str(pos+1) + ': caracter no reconocido.')
+                else:
+                    errores.append('Error lexico en la linea ' + str(line_num) + ', posicion '+ str(pos+1) + ': token no reconocido.')
+                pos += 1
+        
+        if foundTransition:
+            pos += 1
+
+    if actualState in finalStates:
+        lexemas.append(lexema)
+        lexema = ''
+        actualState = 0
+
+    if lexema != '':
+        if len(lexema) == 1:
+            errores.append('Error lexico en la linea ' + str(line_num) + ', posicion '+ str(pos+1) + ': caracter no reconocido.')
+        else:
+            errores.append('Error lexico en la linea ' + str(line_num) + ', posicion '+ str(pos+1) + ': token no reconocido.')
+
+    for lexema in lexemas:
+        for i, afd in enumerate(afdList):
+            if yalex.simulateAFD(afd, lexema):
+                tokens.append(keyTokenList[i])
+    # print(lexemas)
+    # print(tokens)
+
+    if errores != []:
+        print('\\n---ANALISIS LEXICO FALLIDO---')
+        for error in errores:
+            print(error)
+    else:
+        print('\\n-------ANALISIS LEXICO EXITOSO-------')
+        max_lex_len = max(len(lex.strip()) for lex in lexemas)
+        for i, lex in enumerate(lexemas):
+            # Remove white spaces from lex
+            lex = lex.strip()
+
+            if lex == '':
+                continue
+
+            formatted_lex = lex.ljust(max_lex_len)
+            tokens[i] = tokens[i].replace('print("', f'print("{{formatted_lex}} -> ')
+            eval(tokens[i].strip())
+
+if __name__ == '__main__':
+    main()
+        """
+      
+        with open(outputName, 'w') as file:
+            file.write(f"{pythonCode}")

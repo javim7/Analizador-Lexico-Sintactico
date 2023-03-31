@@ -1,12 +1,12 @@
-from Proyecto1.Tree import *
-from Proyecto1.Table import *
-from Proyecto1.Regex import *
-from Proyecto1.Drawer import *
-from Proyecto1.Subsets import *
-from Proyecto1.Postfix import *
-from Proyecto1.Thompson import *
-from Proyecto1.Simulation import *
-from Proyecto1.Minimization import *
+from Tree import *
+from Table import *
+from Regex import *
+from Drawer import *
+from Subsets import *
+from Postfix import *
+from Thompson import *
+from Simulation import *
+from Minimization import *
 
 '''
 Programa Main: Encargadro de correr el programa del proyecto 1
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     # pedimos al usuario que ingrese una regex
     # regexInput = input("\nIngrese un regex, ex. 'a(a|b)*b': ")
     # regularExpression.regex = regexInput descomentar estas lineas para que el usuario ingrese la regex
-    regularExpression.regex = regexList[14]
+    regularExpression.regex = regexList[4]
 
     # verificamos que la regex sea valida
     regex = regularExpression.checkRegex()
@@ -67,8 +67,7 @@ if __name__ == '__main__':
     # input de la cadena a probar
     # stringInput = input("\nIngrese una cadena a probar, ex. 'abab': ")
     stringInput = stringList[11]
-    
-    
+   
     # si la regex es valida, imprimimos la regex
     print("\nRegex: " + regex)
 
@@ -98,7 +97,7 @@ if __name__ == '__main__':
     # dibujamos el afn
     nfa_drawer = Drawer(nfa.transitions, nfa.initial_state,
                         [nfa.final_state], 'AFN')
-    nfa_drawer.draw(filename='Proyecto1/graphs/dibujoAFN')
+    nfa_drawer.draw(filename='graphs/dibujoAFN')
 
     '''
     NFA TO DFA
@@ -117,7 +116,7 @@ if __name__ == '__main__':
     # dibujamos el afd
     dfaSubsets_drawer = Drawer(
         dfaSubsets.transitions, dfaSubsets.initial_state, dfaSubsets.final_states, 'AFD S')
-    dfaSubsets_drawer.draw(filename='Proyecto1/graphs/dibujoADFSub')
+    dfaSubsets_drawer.draw(filename='graphs/dibujoADFSub')
 
     '''
     SUBSET DFA MINIMIZATION
@@ -132,7 +131,7 @@ if __name__ == '__main__':
     # dibujamos el afd minimizado
     minDfaSubsets_drawer = Drawer(
         minDfaSubsets.transitions, minDfaSubsets.initial_state, minDfaSubsets.final_states, 'Min S')
-    minDfaSubsets_drawer.draw(filename='Proyecto1/graphs/dibujoAFDMinSub')
+    minDfaSubsets_drawer.draw(filename='graphs/dibujoAFDMinSub')
 
     '''
     DFA DIRECLY
@@ -150,7 +149,7 @@ if __name__ == '__main__':
     # dibujamos el afd
     dfaDirect_drawer = Drawer(
         dfaDirect.transitions, dfaDirect.initial_state, dfaDirect.final_states, 'AFD D')
-    dfaDirect_drawer.draw(filename='Proyecto1/graphs/dibujoAFDir')
+    dfaDirect_drawer.draw(filename='graphs/dibujoAFDir')
 
     '''
     DIRECT DFA MINIMIZATION
@@ -165,7 +164,7 @@ if __name__ == '__main__':
     # dibujamos el afd minimizado
     minDfaDirect_drawer = Drawer(
         minDfaDirect.transitions, minDfaDirect.initial_state, minDfaDirect.final_states, 'Min D')
-    minDfaDirect_drawer.draw(filename='Proyecto1/graphs/dibujoAFDMinDir')
+    minDfaDirect_drawer.draw(filename='graphs/dibujoAFDMinDir')
 
     '''
     SIMULATIONS

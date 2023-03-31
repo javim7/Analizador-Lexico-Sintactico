@@ -1,0 +1,21 @@
+{
+    (* header section *)
+}
+
+let digit = [0-9]
+let letter = [a-zA-Z]
+let whitespace = [ \t\n]
+
+rule main [input] =
+    | digit+ { print("DIGIT:") }
+    (* matching letters *)
+    | letter+ { print("LETTER:") }
+    (* matching floats *)
+    | digit+.digit+ { print("FLOAT:") }
+    (* matching IDs *)
+    | letter(letter|digit)* { print("ID:") }
+    | whitespace {print("WHITESPACE:") }
+
+{
+    (* trailer section *)
+}

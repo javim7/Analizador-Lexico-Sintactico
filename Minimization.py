@@ -1,4 +1,4 @@
-from Proyecto1.Automaton import *
+from Automaton import *
 
 
 class Minimization():

@@ -10,9 +10,10 @@ let float = '-'?digito+.digito+
 
 rule tokens  =
 	espacioEnBlanco	{print("whitespace")}
-  | identificador	{ print("Identificador\n") }
-  | numero			{ print("Número\n") }
-  | float      {print("Float\n")}
-  | '+'				{ print("Operador de suma\n") }
-  | '*'				{ print("Operador de multiplicación\n") }
-  | '='				{ print("Operador de asignación\n") }
+  | 'for' { print("for")}
+  | identificador	{ print("Identificador") }
+  | numero			{ print("Numero") }
+  | float      {print("Float")}
+  | '+'				{ print("Operador de suma") }
+  | '*'				{ print("Operador de multiplicacion") }
+  | '='				{ print("Operador de asignacion") }

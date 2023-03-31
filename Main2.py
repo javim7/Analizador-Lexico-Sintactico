@@ -1,10 +1,7 @@
-from Proyecto1.Tree import *
-from Proyecto2.YALex import *
-from Proyecto1.Postfix import *
-from Proyecto1.Thompson import *
+from YALex import *
 
 '''
-Programa Main2: Encargadro de correr el programa del proyecto 2
+Programa Main2: Encargado de correr el programa del proyecto 2
 '''
 
 if __name__ == '__main__':
@@ -19,11 +16,11 @@ if __name__ == '__main__':
 
     #obtenemos la informacion del comando
     commandInfo = commands[3].split(" ")
-    yalFile = 'Proyecto2/' + commandInfo[1]
+    yalFile = 'YALFiles/' + commandInfo[1]
     fileToGenerate = commandInfo[3]
 
     # instanciamos yalex
-    yalex = YALex(yalFile)
+    yalex = YALex(yalFile, fileToGenerate)
     
     yalex.compiler()
 
