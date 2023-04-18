@@ -14,6 +14,7 @@ rule main [input] =
     | digit+.digit+ { print("FLOAT:") }
     (* matching IDs *)
     | letter(letter|digit)* { print("ID:") }
+    (* matching IDs *)
     | whitespace {print("WHITESPACE:") }
 
 {

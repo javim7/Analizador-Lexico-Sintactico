@@ -81,16 +81,18 @@ class YALex:
                 elif c == ')':
                     if not stack or stack[-2] != '(':
                         self.errorsList.append(f"')' desbalanceado en la linea: {i+1}")
-                    stack.pop()
-                    stack.pop()
+                    else:
+                        stack.pop()
+                        stack.pop()
                 elif c == '{':
                     stack.append(c)
                     stack.append(i)
                 elif c == '}':
                     if not stack or stack[-2] != '{':
                         self.errorsList.append(f"'}}' desbalanceado en la linea: {i+1}")
-                    stack.pop()
-                    stack.pop()
+                    else:
+                        stack.pop()
+                        stack.pop()
             # Check import statements are correctly formatted
             if line.startswith("import"):
                 if not re.search(r'import\s+[a-zA-Z0-9_]+\s*', line):
@@ -321,7 +323,7 @@ class YALex:
         # megaDFA.transitions, megaDFA.initial_state, megaDFA.final_states)
         # megaDFA_drawer.draw(filename='graphs/megaAutomata')
 
-        # directSim = DFASimulation(megaDFA, '2var')
+        # directSim = DFASimulation(megaDFA, '64.54')
         # print("AFD D  --> " + str(directSim.simulate()))
 
 
