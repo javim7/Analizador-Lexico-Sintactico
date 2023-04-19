@@ -4,7 +4,7 @@
 
 let digit = [0-9]
 let letter = [a-zA-Z]
-let whitespace = [ \t\n]
+let delimitador = [ \t\n]
 
 rule main [input] =
     | digit+ { print("DIGIT:") }
@@ -14,7 +14,7 @@ rule main [input] =
     | digit+.digit+ { print("FLOAT:") }
     (* matching IDs *)
     | letter(letter|digit)* { print("ID:") }
-    (* matching IDs *)
+    (* matching whitespace *)
     | whitespace {print("WHITESPACE:") }
 
 {

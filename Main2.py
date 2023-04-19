@@ -15,7 +15,11 @@ if __name__ == '__main__':
     ]
 
     #obtenemos la informacion del comando
-    commandInfo = commands[3].split(" ")
+    # commandInfo = commands[3].split(" ")
+
+    # yalex ejemplo4.yal -o thelexer.py
+    command = input("lexer(main)> ")
+    commandInfo = command.split(" ")
     yalFile = 'YALFiles/' + commandInfo[1]
     fileToGenerate = commandInfo[3]
 

@@ -1,4 +1,5 @@
 import re
+import codecs
 from Tree import *
 from Regex import *
 from Drawer import *
@@ -22,6 +23,7 @@ class YALex:
             self.errosList = []
             self.dfaList = []
             self.nfaList = []
+            self.delimitadores = []
             self.megaDFA = None
             self.megaRegex = ''
             self.tokens = {
@@ -201,6 +203,24 @@ class YALex:
         # print("\nDICCIONARIO REGEX - Regexes con sus valores originales:")
         # print(self.regex_dict)
 
+        if 'delimitador' in self.regex_dict:
+            delString = self.regex_dict['delimitador']
+            # print(delString)
+            
+            # Decode the string to handle escape sequences
+            # Decode the string to handle escape sequences
+            decoded_string = bytes(delString, 'utf-8').decode('unicode_escape')
+
+            # Iterate over the decoded string and append each character to the delimiter list
+            for char in decoded_string:
+                if char == '[' or char == ']':
+                    continue
+                self.delimitadores.append(char)
+        else:
+            self.delimitadores = [' ', '\t', '\n', '\r']
+        # print("\nDELIMITADORES:")
+        # print(self.delimitadores)
+
         # print("\nSEGUNDA LISTA - Regexes Con valor Original:")
         # print(self.regex_list)
 
@@ -323,7 +343,7 @@ class YALex:
         # megaDFA.transitions, megaDFA.initial_state, megaDFA.final_states)
         # megaDFA_drawer.draw(filename='graphs/megaAutomata')
 
-        # directSim = DFASimulation(megaDFA, '64.54')
+        # directSim = DFASimulation(megaDFA, '*')
         # print("AFD D  --> " + str(directSim.simulate()))
 
 
@@ -336,6 +356,8 @@ from YALex import *
 #creamos el objeto de la clase YALex y compilamos el archivo
 yalex = YALex('{self.filename}')
 yalex.compiler()
+
+delimitadores = yalex.delimitadores
 
 def main():
 
@@ -351,85 +373,108 @@ def main():
     #leemos el archivo de texto
     with open(texto, 'r') as file:  
         data = file.read()
-    
-    words = data.split()
+
     #obtenemos la informacion del mega Automata
     megaAFD = yalex.megaDFA
 
+
     #mandamos a llamar al analizador lexico
-    analizadorLexico(data, megaAFD)
-    analizadorLexico2(words)
+    analizador_lexico(data, delimitadores, megaAFD)
 
-def analizadorLexico(data, megaAFD):
+def analizador_lexico(data, delimiters, megaAFD):
 
-    # obtain the list of tokens
+    #obtenemos la informacion del megaAFD
+    transitions = megaAFD.transitions
+    final_states = megaAFD.final_states
     listOfTokens = yalex.identDict
     keyTokenList = list(listOfTokens.keys())
-
-    # obtain the AFDs of each token
     afdList = yalex.getAFDs(yalex.updatedList)
 
-    transitions = megaAFD.transitions
-    finalStates = megaAFD.final_states
-    pos = 0
-    line_num = 1
-    actualState = 0
-    lexema = ''
+    # variables para el analisis lexico
+    # delimiters = ['#']
     lexemas = []
+    errors = []
     tokens = []
-    errores = []
+    current_lexema = ''
+    current_state = 0
+    in_string = False
 
-    while pos < len(data):
-        symbol = data[pos]
+    line_number = 1
+    char_index = 0
+    while char_index < len(data):
+        char = data[char_index]
 
-        if symbol == "\\n":
-            line_num += 1
-        # buscar la transicion
-        foundTransition = False
-        for transition in transitions:
-            if transition.state == actualState and transition.symbol == symbol:
-                actualState = transition.next_state
-                lexema += symbol
-                foundTransition = True
-                break
-        
-        if not foundTransition:
-            if actualState in finalStates:
-                lexemas.append(lexema)
-                lexema = ''
-                actualState = 0
-            else:
-                # print line_num and pos+1 in error message
-                if len(lexema) == 1:
-                    errores.append('Error lexico en la linea ' + str(line_num) + ', posicion '+ str(pos+1) + ': caracter no reconocido.')
+        if char == "\\n":
+            line_number += 1
+        if char in delimiters:
+            if current_lexema != '':
+                if current_state in final_states:
+                    lexemas.append(current_lexema)
                 else:
-                    errores.append('Error lexico en la linea ' + str(line_num) + ', posicion '+ str(pos+1) + ': token no reconocido.')
-                pos += 1
-        
-        if foundTransition:
-            pos += 1
-
-    if actualState in finalStates:
-        lexemas.append(lexema)
-        lexema = ''
-        actualState = 0
-
-    if lexema != '':
-        if len(lexema) == 1:
-            errores.append('Error lexico en la linea ' + str(line_num) + ', posicion '+ str(pos+1) + ': caracter no reconocido.')
+                    if len(current_lexema) == 1:
+                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{char_index}}: caracter '{{current_lexema}}' no reconocido.")
+                    else:
+                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{char_index}}: token '{{current_lexema}}' no reconocido.")
+            current_lexema = ''
+            current_state = 0
         else:
-            errores.append('Error lexico en la linea ' + str(line_num) + ', posicion '+ str(pos+1) + ': token no reconocido.')
+            current_lexema += char
+            transition_found = False
+
+            for transition in transitions:
+                if transition.state == current_state and transition.symbol == char:
+                    current_state = transition.next_state
+                    transition_found = True
+                    break
+
+            if not transition_found:
+                if in_string:
+                    # Find the next delimiter to break out of the loop
+                    next_delimiter_index = len(data)
+                    for delimiter in delimiters:
+                        delimiter_index = data.find(delimiter, char_index)
+                        if delimiter_index != -1 and delimiter_index < next_delimiter_index:
+                            next_delimiter_index = delimiter_index
+                    current_lexema += data[char_index + 1:next_delimiter_index]
+                    if len(current_lexema) == 1:
+                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{char_index}}: caracter '{{current_lexema}}' no reconocido.")
+                    else:
+                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{char_index}}: token '{{current_lexema}}' no reconocido.")
+                    current_lexema = ''
+                    in_string = False
+                    char_index = next_delimiter_index
+                elif current_state in final_states:
+                    lexemas.append(current_lexema[:-1])
+                    current_lexema = current_lexema[-1]
+                else:
+                    if len(current_lexema) == 1:
+                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{char_index}}: caracter '{{current_lexema}}' no reconocido.")
+                    else:
+                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{char_index}}: token '{{current_lexema}}' no reconocido.")
+                    current_lexema = ''
+                current_state = 0
+            elif current_state == 3:
+                in_string = True
+
+        char_index += 1
+
+    if current_lexema != '':
+        if current_state in final_states:
+            lexemas.append(current_lexema)
+        else:
+            if len(current_lexema) == 1:
+                errors.append(f"Error lexico en la linea {{line_number}}, posicion {{char_index}}: caracter '{{current_lexema}}' no reconocido.")
+            else:
+                errors.append(f"Error lexico en la linea {{line_number}}, posicion {{char_index}}: token '{{current_lexema}}' no reconocido.")
 
     for lexema in lexemas:
         for i, afd in enumerate(afdList):
             if yalex.simulateAFD(afd, lexema):
                 tokens.append(keyTokenList[i])
-    # print(lexemas)
-    # print(tokens)
 
-    if errores != []:
+    if errors != []:
         print('\\n---ANALISIS LEXICO FALLIDO---')
-        for error in errores:
+        for error in errors:
             print(error)
     else:
         print('\\n-------ANALISIS LEXICO EXITOSO-------')
@@ -444,63 +489,6 @@ def analizadorLexico(data, megaAFD):
             formatted_lex = lex.ljust(max_lex_len)
             tokens[i] = tokens[i].replace('print("', f'print("{{formatted_lex}} -> ')
             eval(tokens[i].strip())
-
-
-def analizadorLexico2(data):
-
-    # obtain the list of tokens
-    listOfTokens = yalex.identDict
-    keyTokenList = list(listOfTokens.keys())
-
-    # obtain the AFDs of each token
-    afdList = yalex.getAFDs(yalex.updatedList)
-    tokens = []
-    errores = []
-
-    line_number = 1
-    position_number = 0
-
-    for word in data:
-        # Update position number and line number for each word
-        position_number += 1
-        if '\\n' in word:
-            line_number += 1
-            position_number = 0
-
-        for i, afd in enumerate(afdList):
-            if yalex.simulateAFD(afd, word):
-                tokens.append(keyTokenList[i])
-
-        if not yalex.isValidToken(word):
-            if len(word) == 1:
-                errores.append(f"Error lexico en la linea {{line_number}}, posicion {{position_number}}: caracter '{{word}}' no reconocido.")
-            else:
-                errores.append(f"Error lexico en la linea {{line_number}}, posicion {{position_number}}: token '{{word}}' no reconocido.")
-
-    if not errores:
-        print('\\n-------ANALISIS LEXICO EXITOSO-------')
-        max_lex_len = max(len(lex.strip()) for lex in data)
-        for i, word in enumerate(data):
-            # Remove white spaces from word
-            word = word.strip()
-
-            if word == '':
-                continue
-
-            # Update position number and line number for each word
-            position_number += 1
-            if '\\n' in word:
-                line_number += 1
-                position_number = 0
-
-            formatted_word = word.ljust(max_lex_len)
-            tokens[i] = tokens[i].replace('print("', f'print("{{formatted_word}} -> ')
-            eval(tokens[i].strip())
-    else:
-        print('\\n---ANALISIS LEXICO FALLIDO---')
-        for error in errores:
-            print(error)
-
 
 if __name__ == '__main__':
     main()
