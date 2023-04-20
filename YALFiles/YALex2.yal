@@ -1,0 +1,23 @@
+(* Archivo YALex 2 *)
+
+let delimitador = [' ''\t''\n']
+let espacioEnBlanco = delimitador+
+let digito = ['0'-'9']
+let numero = '-'?digito+
+let letra = ['a'-'z''A'-'Z']
+let identificador = letra(letra|digito)*
+
+(* Definición del punto de entrada y reglas *)
+rule tokens  =
+	espacioEnBlanco	  {print("whitespace")}
+  | 'if'            { print("Palabra reservada if") }
+  | 'for'           { print("Palabra reservada for") }
+  | 'while'         { print("Palabra reservada while") }
+  | '+'				      { print("Operador de suma") }
+  | '-'				      { print("Operador de resta") }
+  | '*'				      { print("Operador de multiplicacion") }
+  | '/'				      { print("Operador de division") }
+  | '='				      { print("Operador de asignacion") }
+  | identificador	  { print("Identificador") }
+  | numero		      { print("Numero") }
+

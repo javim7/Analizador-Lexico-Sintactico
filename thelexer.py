@@ -2,7 +2,7 @@
 from YALex import *
 
 #creamos el objeto de la clase YALex y compilamos el archivo
-yalex = YALex('YALFiles/ejemplo4.yal')
+yalex = YALex('YALFiles/YALex3.yal')
 yalex.compiler()
 
 delimitadores = yalex.delimitadores
@@ -22,9 +22,22 @@ def main():
     with open(texto, 'r') as file:  
         data = file.read()
 
+    # buscar las cadenas en comillas dobles y reemplazar los espacios en blanco por guiones bajos
+    start = 0
+    while True:
+        start = data.find('"', start)  # encontrar el primer par de comillas dobles
+        if start == -1:
+            break
+        end = data.find('"', start+1)  # encontrar el siguiente par de comillas dobles
+        if end == -1:
+            break
+        s = data[start:end+1]  # obtener la subcadena dentro de las comillas dobles
+        s_new = s.replace(' ', '_')  # reemplazar los espacios en blanco con guiones bajos
+        data = data[:start] + s_new + data[end+1:]  # reemplazar la subcadena en el texto original
+        start += len(s_new)  # actualizar la posición de inicio para buscar la siguiente subcadena
+
     #obtenemos la informacion del mega Automata
     megaAFD = yalex.megaDFA
-
 
     #mandamos a llamar al analizador lexico
     analizador_lexico(data, delimitadores, megaAFD)
@@ -119,6 +132,7 @@ def analizador_lexico(data, delimiters, megaAFD):
         for i, afd in enumerate(afdList):
             if yalex.simulateAFD(afd, lexema):
                 tokens.append(keyTokenList[i])
+                break
 
     if errors != []:
         print('\n---ANALISIS LEXICO FALLIDO---')
@@ -133,6 +147,10 @@ def analizador_lexico(data, delimiters, megaAFD):
 
             if lex == '':
                 continue
+            if '"' in lex:
+                lex = lex.replace('"', '')
+            if '_' in lex:
+                lex = lex.replace('_', ' ')
 
             formatted_lex = lex.ljust(max_lex_len)
             tokens[i] = tokens[i].replace('print("', f'print("{formatted_lex} -> ')

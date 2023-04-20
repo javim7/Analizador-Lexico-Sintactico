@@ -1,2 +1,4 @@
-353 hola 32.3 hola3
-var3
+hola2xyz "hola mundo" 323 "23 ho3 a"
+if 323 greaterxyz thanxyz 35 printxyz "mas grande"
+for ixyz inxyz rangexyz 10
+printxyz "hola mundo"

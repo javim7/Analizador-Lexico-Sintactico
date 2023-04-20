@@ -1,0 +1,22 @@
+(* Archivo YALex 1 *)
+
+let delimitador = [' ''\t''\n']
+let espacioEnBlanco = delimitador+
+let digito = ['0'-'9']
+let letra = ['a'-'f''A'-'F']
+let equis = ['x''X']
+let numero = '-'?digito+
+let decimal = '-'?digito+.digito+
+let numHexa = (0equis)?(digito|letra)+
+
+rule tokens = 
+    espacioEnBlanco {print("whitespace")}
+    | '+'           {print("Operador suma")}
+    | '-'           {print("Operador resta")}
+    | '*'           {print("Operador multiplicacion")}
+    | '/'           {print("Operador division")}
+    | '^'           {print("Operador potencia")}
+    | '='           {print("Operador asignacion")}
+    | numero        {print("Numero entero")}
+    | decimal       {print("Numero decimal")}
+    | numHexa       {print("Numero hexadecimal")}

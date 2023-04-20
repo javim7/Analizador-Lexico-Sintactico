@@ -2,7 +2,7 @@
 from YALex import *
 
 #creamos el objeto de la clase YALex y compilamos el archivo
-yalex = YALex('YALFiles/ejemplo4.yal')
+yalex = YALex('YALFiles/YALex2.yal')
 yalex.compiler()
 
 delimitadores = yalex.delimitadores

@@ -1,2 +1,6 @@
-var @ -4 
-2var 1
+numero = 59 
+numero22 = 832
+
+if numero1 gt numero22
+while numero22 gt numero33
+for i in range numero1 = print fortuna

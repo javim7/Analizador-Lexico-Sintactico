@@ -230,6 +230,11 @@ class YALex:
             if '.' in self.regex_list[i]:
                 self.regex_list[i] = self.regex_list[i].replace('.', ',')
 
+        for i in range(len(self.regex_list)):
+            if i == 0:
+                continue
+            if ' ' in self.regex_list[i]:
+                self.regex_list[i] = self.regex_list[i].replace(' ', '_')
 
         # print("\nTERCERA LISTA - Regexes Con Tokens Reemplazados:")
         # print(self.regex_list)
@@ -250,6 +255,10 @@ class YALex:
 
 
             # Modify [a-zA-Z] to (a|b|c|...|Z)
+            regex = re.sub(r'\[xX\]', '(x|X)', regex)
+            regex = re.sub(r"\['x''X'\]", '(x|X)', regex)
+            regex = re.sub(r'\[a-fA-F\]', '(a|b|c|d|e|f|A|B|C|D|E|F)', regex)
+            regex = re.sub(r"\['a'-'f''A'-'F'\]", '(a|b|c|d|e|f|A|B|C|D|E|F)', regex)
             regex = re.sub(r'\[a-zA-Z\]', '(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z)', regex)
             regex = re.sub(r"\['a'-'z''A'-'Z'\]", '(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z)', regex)
             
@@ -374,9 +383,22 @@ def main():
     with open(texto, 'r') as file:  
         data = file.read()
 
+    # buscar las cadenas en comillas dobles y reemplazar los espacios en blanco por guiones bajos
+    start = 0
+    while True:
+        start = data.find('"', start)  # encontrar el primer par de comillas dobles
+        if start == -1:
+            break
+        end = data.find('"', start+1)  # encontrar el siguiente par de comillas dobles
+        if end == -1:
+            break
+        s = data[start:end+1]  # obtener la subcadena dentro de las comillas dobles
+        s_new = s.replace(' ', '_')  # reemplazar los espacios en blanco con guiones bajos
+        data = data[:start] + s_new + data[end+1:]  # reemplazar la subcadena en el texto original
+        start += len(s_new)  # actualizar la posición de inicio para buscar la siguiente subcadena
+
     #obtenemos la informacion del mega Automata
     megaAFD = yalex.megaDFA
-
 
     #mandamos a llamar al analizador lexico
     analizador_lexico(data, delimitadores, megaAFD)
@@ -471,6 +493,7 @@ def analizador_lexico(data, delimiters, megaAFD):
         for i, afd in enumerate(afdList):
             if yalex.simulateAFD(afd, lexema):
                 tokens.append(keyTokenList[i])
+                break
 
     if errors != []:
         print('\\n---ANALISIS LEXICO FALLIDO---')
@@ -485,6 +508,10 @@ def analizador_lexico(data, delimiters, megaAFD):
 
             if lex == '':
                 continue
+            if '"' in lex:
+                lex = lex.replace('"', '')
+            if '_' in lex:
+                lex = lex.replace('_', ' ')
 
             formatted_lex = lex.ljust(max_lex_len)
             tokens[i] = tokens[i].replace('print("', f'print("{{formatted_lex}} -> ')

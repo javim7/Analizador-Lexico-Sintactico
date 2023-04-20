@@ -29,6 +29,8 @@ if __name__ == '__main__':
         "(a|b)*a(a|b)(a|b)",   # 12
         "-(0|1|2|3|4|5|6|7|8|9)+",   # 13
         "-?(0|1|2|3|4|5|6|7|8|9)+",   # 14
+        "(0(x|X))?",  # 15
+        '""'
     ]
 
     stringList = [
@@ -56,7 +58,7 @@ if __name__ == '__main__':
     # pedimos al usuario que ingrese una regex
     # regexInput = input("\nIngrese un regex, ex. 'a(a|b)*b': ")
     # regularExpression.regex = regexInput descomentar estas lineas para que el usuario ingrese la regex
-    regularExpression.regex = regexList[4]
+    regularExpression.regex = regexList[15]
 
     # verificamos que la regex sea valida
     regex = regularExpression.checkRegex()

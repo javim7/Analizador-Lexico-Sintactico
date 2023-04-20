@@ -1,0 +1,20 @@
+(* Archivo YALex 3 *)
+
+
+let delimitador = [' ''\t''\n']
+let espacioEnBlanco = delimitador+
+let digito = ['0'-'9']
+let letra = ['a'-'z''A'-'Z']
+let numero = '-'?digito+
+let decimal = '-'?digito+.digito+
+let identificador = letra(letra|digito)*xyz
+let cadena = "(letra|digito| )+"
+
+rule tokens  =
+	espacioEnBlanco	{print("whitespace")}
+  | 'if'            {print("Palabra reservada if")}
+  | 'for'           {print("Palabra reservada for")}
+  | identificador	  {print("Identificador") }
+  | numero			    {print("Numero entero") }
+  | decimal         {print("Numero decimal")}
+  | cadena          {print("Cadena")}
