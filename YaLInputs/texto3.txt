@@ -1,0 +1,4 @@
+hola2abc "hola mundo" 323 "23 ho3 a"
+if 323 greaterabc thanabc 35 printabc "mas grande"
+for iabc inabc rangeabc 10
+printabc "hola mundo"

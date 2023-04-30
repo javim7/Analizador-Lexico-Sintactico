@@ -1,13 +1,12 @@
 (* Archivo YALex 3 *)
 
-
 let delimitador = [' ''\t''\n']
 let espacioEnBlanco = delimitador+
 let digito = ['0'-'9']
 let letra = ['a'-'z''A'-'Z']
 let numero = '-'?digito+
 let decimal = '-'?digito+.digito+
-let identificador = letra(letra|digito)*xyz
+let identificador = letra(letra|digito)*abc
 let cadena = "(letra|digito| )+"
 
 rule tokens  =

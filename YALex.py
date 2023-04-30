@@ -243,18 +243,42 @@ class YALex:
     
     def modifyRegexes(self):
 
-        for regex in self.regex_list:
-            # print(regex)
-            # Modify [0-9]+ to (0|1|2|3|4|5|6|7|8|9)+
+        for i in range(len(self.regex_list)):
+            regex = self.regex_list[i]
+            while True:
+                match = re.search(r'\[([a-zA-Z])\-(?P<end1>[a-zA-Z])\]|\[([0-9])\-(?P<end2>[0-9])\]', regex)
+                if match:
+                    if match.group(1) is not None:
+                        start = ord(match.group(1))
+                        end = ord(match.group('end1'))
+                        new_pattern = '(' + '|'.join([chr(x) for x in range(start, end + 1)]) + ')'
+                        regex = re.sub(r'\[([a-zA-Z])\-(?P<end1>[a-zA-Z])\]', new_pattern, regex)
+                    else:
+                        start = int(match.group(3))
+                        end = int(match.group('end2'))
+                        new_pattern = '(' + '|'.join([str(x) for x in range(start, end + 1)]) + ')'
+                        regex = re.sub(r'\[([0-9])\-(?P<end2>[0-9])\]', new_pattern, regex)
+                else:
+                    break
+            while True:
+                match = re.search(r'\[([a-zA-Z0-9]+)\]', regex)
+                if match:
+                    new_pattern = '(' + '|'.join([x for x in match.group(1)]) + ')'
+                    regex = re.sub(r'\[([a-zA-Z0-9]+)\]', new_pattern, regex, count=1)
+                else:
+                    break
+
+             # Modify [0-9]+ to (0|1|2|3|4|5|6|7|8|9)+
             regex = re.sub(r'\[0-9\]', '(0|1|2|3|4|5|6|7|8|9)', regex)
+            regex = re.sub(r'\[0-4\]', '(0|1|2|3|4)', regex)
+            regex = re.sub(r'\[5-9\]', '(5|6|7|8|9)', regex)
             regex = re.sub(r"\['0'-'9'\]", '(0|1|2|3|4|5|6|7|8|9)', regex)
 
-            # Modify [a-z] to (a|b|c|...|z)
+            # # Modify [a-z] to (a|b|c|...|z)
             regex = re.sub(r'\[a-z\]', '(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)', regex)
             regex = re.sub(r"\['a'-'z'\]", '(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)', regex)
 
-
-            # Modify [a-zA-Z] to (a|b|c|...|Z)
+            # # Modify [a-zA-Z] to (a|b|c|...|Z)
             regex = re.sub(r'\[xX\]', '(x|X)', regex)
             regex = re.sub(r"\['x''X'\]", '(x|X)', regex)
             regex = re.sub(r'\[a-fA-F\]', '(a|b|c|d|e|f|A|B|C|D|E|F)', regex)
@@ -374,10 +398,10 @@ def main():
     archivo = input('\\nIngrese el nombre del archivo de entrada: ')
 
     #creamos la variable del archivo
-    texto = 'Inputs/'+archivo+'.txt'
+    texto = 'YALInputs/'+archivo+'.txt'
 
     #creamos la variable del archivo
-    # texto = 'Inputs/texto.txt'
+    # texto = 'YALInputs/texto1.txt'
 
     #leemos el archivo de texto
     with open(texto, 'r') as file:  
@@ -423,20 +447,23 @@ def analizador_lexico(data, delimiters, megaAFD):
 
     line_number = 1
     char_index = 0
+    posicion = 0
     while char_index < len(data):
         char = data[char_index]
 
         if char == "\\n":
             line_number += 1
+            posicion = 0
+
         if char in delimiters:
             if current_lexema != '':
                 if current_state in final_states:
                     lexemas.append(current_lexema)
                 else:
                     if len(current_lexema) == 1:
-                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{char_index}}: caracter '{{current_lexema}}' no reconocido.")
+                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{posicion}}: caracter '{{current_lexema}}' no reconocido.")
                     else:
-                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{char_index}}: token '{{current_lexema}}' no reconocido.")
+                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{posicion}}: token '{{current_lexema}}' no reconocido.")
             current_lexema = ''
             current_state = 0
         else:
@@ -459,9 +486,9 @@ def analizador_lexico(data, delimiters, megaAFD):
                             next_delimiter_index = delimiter_index
                     current_lexema += data[char_index + 1:next_delimiter_index]
                     if len(current_lexema) == 1:
-                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{char_index}}: caracter '{{current_lexema}}' no reconocido.")
+                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{posicion}}: caracter '{{current_lexema}}' no reconocido.")
                     else:
-                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{char_index}}: token '{{current_lexema}}' no reconocido.")
+                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{posicion}}: token '{{current_lexema}}' no reconocido.")
                     current_lexema = ''
                     in_string = False
                     char_index = next_delimiter_index
@@ -470,24 +497,25 @@ def analizador_lexico(data, delimiters, megaAFD):
                     current_lexema = current_lexema[-1]
                 else:
                     if len(current_lexema) == 1:
-                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{char_index}}: caracter '{{current_lexema}}' no reconocido.")
+                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{posicion}}: caracter '{{current_lexema}}' no reconocido.")
                     else:
-                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{char_index}}: token '{{current_lexema}}' no reconocido.")
+                        errors.append(f"Error lexico en la linea {{line_number}}, posicion {{posicion}}: token '{{current_lexema}}' no reconocido.")
                     current_lexema = ''
                 current_state = 0
             elif current_state == 3:
                 in_string = True
 
         char_index += 1
+        posicion += 1
 
     if current_lexema != '':
         if current_state in final_states:
             lexemas.append(current_lexema)
         else:
             if len(current_lexema) == 1:
-                errors.append(f"Error lexico en la linea {{line_number}}, posicion {{char_index}}: caracter '{{current_lexema}}' no reconocido.")
+                errors.append(f"Error lexico en la linea {{line_number}}, posicion {{posicion}}: caracter '{{current_lexema}}' no reconocido.")
             else:
-                errors.append(f"Error lexico en la linea {{line_number}}, posicion {{char_index}}: token '{{current_lexema}}' no reconocido.")
+                errors.append(f"Error lexico en la linea {{line_number}}, posicion {{posicion}}: token '{{current_lexema}}' no reconocido.")
 
     for lexema in lexemas:
         for i, afd in enumerate(afdList):
