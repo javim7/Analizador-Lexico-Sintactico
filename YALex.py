@@ -1,5 +1,4 @@
 import re
-import codecs
 from Tree import *
 from Regex import *
 from Drawer import *
@@ -373,7 +372,7 @@ class YALex:
                 transition.symbol = '.'
        
         # megaDFA_drawer = Drawer(
-        # megaDFA.transitions, megaDFA.initial_state, megaDFA.final_states)
+        #     megaDFA.transitions, megaDFA.initial_state, megaDFA.final_states)
         # megaDFA_drawer.draw(filename='graphs/megaAutomata')
 
         # directSim = DFASimulation(megaDFA, '*')
