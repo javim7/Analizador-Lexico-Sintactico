@@ -433,13 +433,20 @@ def analizador_lexico(data, delimiters, megaAFD):
     final_states = megaAFD.final_states
     listOfTokens = yalex.identDict
     keyTokenList = list(listOfTokens.keys())
+    valueTokenList = list(listOfTokens.values())
     afdList = yalex.getAFDs(yalex.updatedList)
+
+    # escbribimos el archivo de tokens
+    with open('tokens.txt', 'w') as file:
+        for token in valueTokenList:
+            file.write(token + '\\n')
 
     # variables para el analisis lexico
     # delimiters = ['#']
     lexemas = []
     errors = []
     tokens = []
+    tokensValueType = {{}}
     current_lexema = ''
     current_state = 0
     in_string = False
@@ -520,6 +527,7 @@ def analizador_lexico(data, delimiters, megaAFD):
         for i, afd in enumerate(afdList):
             if yalex.simulateAFD(afd, lexema):
                 tokens.append(keyTokenList[i])
+                tokensValueType[lexema] = valueTokenList[i]
                 break
 
     if errors != []:

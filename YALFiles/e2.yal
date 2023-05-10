@@ -1,0 +1,19 @@
+(* Archivo Prueba 2 *)
+
+let delimitador = [' ''\t''\n']
+let WS = delimitador+
+let digit = ['0'-'9']
+let letter = ['a'-'z''A'-'Z']
+let ID = letter(letter|digit)*
+let PLUS = '+'
+let TIMES = '*'
+let LPAREN = '('
+let RPAREN = ')'
+
+rule tokens = 
+    WS {print("WS")}
+    | ID {print("ID")}
+    | PLUS {print("PLUS")}
+    | TIMES {print("TIMES")}
+    | LPAREN {print("LPAREN")}
+    | RPAREN {print("RPAREN")}

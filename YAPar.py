@@ -36,10 +36,12 @@ class YAPar:
         
         # si no hay errores, continuamos
 
-        #obtenemos los tokens y definimos la gramatica
+        #obtenemos los tokens y verificamos que esten en el yalex
         self.tokens = self.getTokens()
+        self.check_tokens(self.tokens)
+
+        #obtenemos la gramatica y la aumentamos
         self.grammar = self.defineGrammar()
-        #aumentamos la gramtica
         self.increasedGrammar = self.increaseGrammar(self.grammar)
 
         #obtenemos el primer conjunto y con esto el automata LR(0)
@@ -102,6 +104,24 @@ class YAPar:
         # Remove ignored tokens from the token list
         tokens = [token for token in tokens if token not in ignored_tokens]
         return tokens
+
+    def check_tokens(self, tokens):
+        print("\n-----CHECKING TOKENS-----")
+        with open('tokens.txt', 'r') as file:
+            file_tokens = [line.strip() for line in file.readlines()]
+        
+        all_tokens_present = True
+        
+        for token in tokens:
+            if token in file_tokens:
+                print(f"{token}: True")
+            else:
+                print(f"{token}: False")
+                all_tokens_present = False
+        
+        print(f"Tokens checked = {len(tokens)}, Token Check = {all_tokens_present}")
+        return all_tokens_present
+
 
     def defineGrammar(self):
         grammar = Grammar()

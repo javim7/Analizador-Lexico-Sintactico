@@ -8,6 +8,8 @@
 %token ID
 %token LPAREN RPAREN
 %token PLUS TIMES
+%token WS
+IGNORE WS
 
 
 %%

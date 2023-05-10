@@ -2,7 +2,7 @@
 from YALex import *
 
 #creamos el objeto de la clase YALex y compilamos el archivo
-yalex = YALex('YALFiles/YALex3.yal')
+yalex = YALex('YALFiles/e1.yal')
 yalex.compiler()
 
 delimitadores = yalex.delimitadores
@@ -34,7 +34,7 @@ def main():
         s = data[start:end+1]  # obtener la subcadena dentro de las comillas dobles
         s_new = s.replace(' ', '_')  # reemplazar los espacios en blanco con guiones bajos
         data = data[:start] + s_new + data[end+1:]  # reemplazar la subcadena en el texto original
-        start += len(s_new)  # actualizar la posiciï¿½n de inicio para buscar la siguiente subcadena
+        start += len(s_new)  # actualizar la posición de inicio para buscar la siguiente subcadena
 
     #obtenemos la informacion del mega Automata
     megaAFD = yalex.megaDFA
@@ -49,14 +49,20 @@ def analizador_lexico(data, delimiters, megaAFD):
     final_states = megaAFD.final_states
     listOfTokens = yalex.identDict
     keyTokenList = list(listOfTokens.keys())
+    valueTokenList = list(listOfTokens.values())
     afdList = yalex.getAFDs(yalex.updatedList)
-    print(list(listOfTokens.values()))
+
+    # escbribimos el archivo de tokens
+    with open('tokens.txt', 'w') as file:
+        for token in valueTokenList:
+            file.write(token + '\n')
 
     # variables para el analisis lexico
     # delimiters = ['#']
     lexemas = []
     errors = []
     tokens = []
+    tokensValueType = {}
     current_lexema = ''
     current_state = 0
     in_string = False
@@ -137,6 +143,7 @@ def analizador_lexico(data, delimiters, megaAFD):
         for i, afd in enumerate(afdList):
             if yalex.simulateAFD(afd, lexema):
                 tokens.append(keyTokenList[i])
+                tokensValueType[lexema] = valueTokenList[i]
                 break
 
     if errors != []:

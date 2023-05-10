@@ -11,10 +11,12 @@ if __name__ == '__main__':
         "yalex YALex1.yal -o thelexer.py",  #0
         "yalex YALex2.yal -o thelexer.py", #1
         "yalex YALex3.yal -o thelexer.py", #2
+        "yalex e1.yal -o thelexer.py",    #3
+        "yalex e2.yal -o thelexer.py",    #4
     ]
 
     #obtenemos la informacion del comando
-    commandInfo = commands[2].split(" ")
+    commandInfo = commands[3].split(" ")
 
     # yalex ejemplo4.yal -o thelexer.py
     # command = input("lexer(main)> ")
