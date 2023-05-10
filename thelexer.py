@@ -34,7 +34,7 @@ def main():
         s = data[start:end+1]  # obtener la subcadena dentro de las comillas dobles
         s_new = s.replace(' ', '_')  # reemplazar los espacios en blanco con guiones bajos
         data = data[:start] + s_new + data[end+1:]  # reemplazar la subcadena en el texto original
-        start += len(s_new)  # actualizar la posición de inicio para buscar la siguiente subcadena
+        start += len(s_new)  # actualizar la posiciï¿½n de inicio para buscar la siguiente subcadena
 
     #obtenemos la informacion del mega Automata
     megaAFD = yalex.megaDFA
@@ -50,6 +50,7 @@ def analizador_lexico(data, delimiters, megaAFD):
     listOfTokens = yalex.identDict
     keyTokenList = list(listOfTokens.keys())
     afdList = yalex.getAFDs(yalex.updatedList)
+    print(list(listOfTokens.values()))
 
     # variables para el analisis lexico
     # delimiters = ['#']

@@ -1,18 +1,16 @@
 /* Gramatica SLR: */
 /* E -> E + T | T */
-/* T -> t * F | F */
+/* T -> T * F | F */
 /* F -> ( E ) | id */
 
 %token ID
 %token PLUS
 %token TIMES
-%token LPAREN
-%token RPAREN
+%token LPAREN RPAREN
 %token WS
 IGNORE WS
 
 %%
-
 expression:
     expression PLUS term
     | term

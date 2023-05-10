@@ -1,0 +1,36 @@
+/* Gramatica SLR: */
+/* E -> TE' */
+/* E' -> + TE' | ε */
+/* T -> FT' */
+/* T' -> *FT' | ε */
+/* F -> ( E ) | id */
+
+%token ID
+%token LPAREN RPAREN
+%token PLUS TIMES
+
+
+%%
+
+expression:
+    term expression'
+;
+
+expression':
+    PLUS term expression'
+    | EPSILON
+;
+
+term:
+    factor term'
+;
+
+term':
+    TIMES factor term'
+    | EPSILON
+;
+
+factor:
+    LPAREN expression RPAREN
+    | ID
+;

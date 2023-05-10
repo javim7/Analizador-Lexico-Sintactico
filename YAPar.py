@@ -14,11 +14,14 @@ class YAPar:
             self.outputname = outputname
             self.lines = self.file.readlines()
             self.errors = False
-            self.grammar = None
-            self.increasedGrammar = None
+            self.tokens = []
+            self.grammar = {}
+            self.increasedGrammar = {}
             self.estados = 0
             self.sets = []
             self.afdLR0 = None
+            self.first = {}
+            self.follow = {}
         except FileNotFoundError:
             raise Exception('File could not be opened')
         
@@ -32,15 +35,74 @@ class YAPar:
             raise Exception(errores_str)
         
         # si no hay errores, continuamos
-        self.grammar = self.defineGrammar()
 
+        #obtenemos los tokens y definimos la gramatica
+        self.tokens = self.getTokens()
+        self.grammar = self.defineGrammar()
+        #aumentamos la gramtica
         self.increasedGrammar = self.increaseGrammar(self.grammar)
 
+        #obtenemos el primer conjunto y con esto el automata LR(0)
         self.firstSet(self.increasedGrammar)
 
+        self.grammar.first = self.compute_first(self.grammar.productions)
+        self.grammar.follow = self.compute_follow(self.grammar.productions)
+
     def detectErrors(self):
-        pass
+        errors = []
+        yaSonProducciones = False
+        for i, line in enumerate(self.lines):
+            if line.strip().startswith("/*") and not line.strip().endswith("*/"):
+                print(line)
+                errors.append(f"Formato incorrecto de 'comentario' en la linea: {i+1}")
+            if line.strip().endswith("*/") and not line.strip().startswith("/*"):
+                print(line)
+                errors.append(f"Formato incorrecto de 'comentario' en la linea: {i+1}")
+            if line.startswith("%") and line.strip() != '%%':
+                if yaSonProducciones:
+                    errors.append(f"Token en seccion incorrecta en la linea: {i+1}")
+                if line.startswith("%token"):
+                    words = line.split()
+                    if len(words) < 2:
+                        errors.append(f"'%token' no identificado en la linea: {i+1}")
+                else:
+                    errors.append(f"Formato incorrecto de 'token' en la linea: {i+1}")
+            if 'token' in line and not line.startswith("%"):
+                errors.append(f"Formato incorrecto de '%token' en la linea: {i+1}")
+            if line.startswith("IGNORE"):
+                words = line.split()
+                if len(words) < 2:
+                    errors.append(f"'IGNORE' no identificado en la linea: {i+1}")
+            if line.strip() == '%%':
+                yaSonProducciones = True
+        if not yaSonProducciones:
+            errors.append("No se encontro la marca '%%' en el archivo")
+        self.errors = bool(errors)
+        return errors if errors else None
+
     
+    def getTokens(self):
+        tokens = []
+        ignored_tokens = set()
+        for line in self.lines:
+            line = line.strip()
+            if line == '%%':
+                break
+            elif line.startswith('/*') and line.endswith('*/'):
+                # Ignore comments
+                continue
+            elif line.startswith('%token'):
+                # Get tokens
+                line_tokens = line.split()[1:]
+                tokens.extend(line_tokens)
+            elif line.startswith('IGNORE'):
+                # Get ignored tokens
+                ignored_tokens.update(line.split()[1:])
+            
+        # Remove ignored tokens from the token list
+        tokens = [token for token in tokens if token not in ignored_tokens]
+        return tokens
+
     def defineGrammar(self):
         grammar = Grammar()
         nonTerminals = []
@@ -68,6 +130,8 @@ class YAPar:
                 nonterm = line[:-1].strip()
                 prods = []
             else:
+                if line.startswith('/*') and line.endswith('*/'):
+                    continue
                 # Production alternative
                 productions = [prod.strip() for prod in line.split("|") if prod.strip()]
                 prods.extend(productions)
@@ -101,14 +165,20 @@ class YAPar:
     def increaseGrammar(self, grammar):
         tempGrammar = copy.deepcopy(grammar)
         newInitialState = tempGrammar.initialState + "'"
-        tempGrammar.productions = OrderedDict([(newInitialState, [tempGrammar.initialState])] + list(tempGrammar.productions.items()))
+        if newInitialState in tempGrammar.productions:
+            tempGrammar.productions[newInitialState].insert(0, tempGrammar.initialState)
+            key = newInitialState
+            value = tempGrammar.productions.pop(key)
+            tempGrammar.productions = OrderedDict([(key, value)] + list(tempGrammar.productions.items()))
+        else:
+            tempGrammar.productions = OrderedDict([(newInitialState, [tempGrammar.initialState])] + list(tempGrammar.productions.items()))
 
         tempGrammar.productions = dict(tempGrammar.productions)
 
-        # print("temp")
-        # print(tempGrammar)
         # print("original")
         # print(grammar)
+        # print("temp")
+        # print(tempGrammar)
         return tempGrammar
 
     def firstSet(self, grammar):
@@ -133,10 +203,14 @@ class YAPar:
         self.buildAutomaton(firstSet)
 
     # Define a function to format the state labels
-    def format_label(self, state, state_number):
-        label = f"State {state_number}\n"
-        for key, value in state.items():
-            label += f"{key} -> {' | '.join(value)}\\l"
+    def format_label(self, set):
+        label = f"State {set.estado}\n"
+        for key, value in set.productions.items():
+            if key in set.corazon:
+                label += f"*** {key} -> {' | '.join(value)}\\l"
+            else:
+                label += f"{key} -> {' | '.join(value)}\\l"
+        
         return label
 
 
@@ -173,28 +247,35 @@ class YAPar:
         graph = pydot.Dot(graph_type='digraph')
 
         for set in self.sets:
-            label = self.format_label(set.productions, set.estado)
+            label = self.format_label(set)
             node = pydot.Node(label)
             graph.add_node(node)
 
         for transition in afd.transitions:
-            state = self.format_label(transition.state.productions, transition.state.estado)
-            next_state = self.format_label(transition.next_state.productions, transition.next_state.estado)
+            state = self.format_label(transition.state)
+            next_state = self.format_label(transition.next_state)
             edge = pydot.Edge(state, next_state, label=transition.symbol)
             graph.add_edge(edge)
         
         for transition in afd.transitions[::-1]:
             if transition.state.estado == 1:
-                state = self.format_label(transition.state.productions, transition.state.estado)
+                state = self.format_label(transition.state)
                 next_state = 'accept'
                 edge = pydot.Edge(state, next_state, label='$')
                 graph.add_edge(edge)
+                break
+            elif transition.next_state.estado == 1:
+                state = self.format_label(transition.next_state)
+                next_state = 'accept'
+                edge = pydot.Edge(state, next_state, label='$')
+                graph.add_edge(edge)
+                break
 
         graph.write_pdf('graphs/LR0.pdf')
         afd.final_states = []
         afd.final_states.append('accept')
 
-        afd.print_dfa()
+        # afd.print_dfa()
         afd.dfa_info()
 
         self.afdLR0 = afd
@@ -239,12 +320,20 @@ class YAPar:
                 afd.final_states = []
                 afd.final_states.append(finalState)
                 break
+            elif transition.next_state == 1:
+                afd.getStates()
+                finalState = len(afd.states)
+                transition = Transition(transition.next_state, '$', finalState)
+                afd.transitions.insert(len(afd.transitions) - i, transition)
+                afd.final_states = []
+                afd.final_states.append(finalState)
+                break
                
         afd_drawer = Drawer(
             afd.transitions, afd.initial_state, afd.final_states, 'LR(0)')
         afd_drawer.draw(filename='graphs/LR0')
         
-        afd.print_dfa()
+        # afd.print_dfa()
         afd.dfa_info()
 
         self.afdLR0 = afd
@@ -340,5 +429,88 @@ class YAPar:
                                     symbols.append(next_symbol)
 
         return symbols
+    
+    def compute_first(self, grammar):
+        first = {nonterminal: [] for nonterminal in grammar}
+        changes = True
+        while changes:
+            changes = False
+            for nonterminal in grammar:
+                for production in grammar[nonterminal]:
+                    symbols = production.split()
+                    for i, symbol in enumerate(symbols):
+                        if symbol.isupper():
+                            # Terminal symbol
+                            if symbol not in first[nonterminal]:
+                                first[nonterminal].append(symbol)
+                                changes = True
+                            break
+                        else:
+                            # Nonterminal symbol
+                            for first_symbol in first[symbol]:
+                                if first_symbol not in first[nonterminal]:
+                                    first[nonterminal].append(first_symbol)
+                                    changes = True
+                            if 'EPSILON' not in first[symbol]:
+                                break
+                    else:
+                        # All symbols in the production derive EPSILON
+                        if 'EPSILON' not in first[nonterminal]:
+                            first[nonterminal].append('EPSILON')
+                            changes = True
+        return first
+    
+    def compute_follow(self, grammar):
+        # Initialize follow sets to empty lists
+        follow = {nonterminal: [] for nonterminal in grammar}
+
+        # Initialize the start symbol's follow set to [$]
+        start_symbol = list(grammar.keys())[0]
+        follow[start_symbol].append('$')
+
+        # Compute the first sets for the grammar
+        first = self.compute_first(grammar)
+
+        # Keep track of changes to the follow sets
+        changes = True
+        while changes:
+            changes = False
+            for nonterminal in grammar:
+                for production in grammar[nonterminal]:
+                    symbols = production.split()
+                    for i, symbol in enumerate(symbols):
+                        if symbol.islower():
+                            # Nonterminal symbol
+                            if i == len(symbols) - 1:
+                                # Last symbol in the production
+                                for follow_symbol in follow[nonterminal]:
+                                    if follow_symbol not in follow[symbol]:
+                                        follow[symbol].append(follow_symbol)
+                                        changes = True
+                            else:
+                                # Not the last symbol in the production
+                                if symbols[i+1].islower():
+                                    # Next symbol is a nonterminal
+                                    for first_symbol in first[symbols[i+1]]:
+                                        if first_symbol != 'EPSILON' and first_symbol not in follow[symbol]:
+                                            follow[symbol].append(first_symbol)
+                                            changes = True
+                                    if 'EPSILON' in first[symbols[i+1]]:
+                                        for follow_symbol in follow[nonterminal]:
+                                            if follow_symbol not in follow[symbol]:
+                                                follow[symbol].append(follow_symbol)
+                                                changes = True
+                                else:
+                                    # Next symbol is a terminal
+                                    if symbols[i+1] not in first:
+                                        # Add the terminal symbol to the first set
+                                        first[symbols[i+1]] = [symbols[i+1]]
+                                    if symbols[i+1] != 'EPSILON' and symbols[i+1] not in follow[symbol]:
+                                        follow[symbol].append(symbols[i+1])
+                                        changes = True
+                        else:
+                            # Terminal symbol
+                            continue
+        return follow
 
 
