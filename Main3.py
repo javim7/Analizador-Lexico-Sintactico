@@ -15,7 +15,8 @@ if __name__ == '__main__':
     commandInfo = comandos[0].split(" ")
 
     yapFile = 'YAPFiles/' +commandInfo[1]
-    fileToGenerate = [5]
+    fileToGenerate = commandInfo[5]
+    print(fileToGenerate)   
     lexerFile = commandInfo[3]
 
     # instanciamos yapar

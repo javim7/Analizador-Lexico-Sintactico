@@ -31,33 +31,37 @@ class YAPar:
             raise Exception('File could not be opened')
         
     def compiler(self):
-        # detectamos errores
-        errores = self.detectErrors()
+        if self.outputname is None:
+            # detectamos errores
+            errores = self.detectErrors()
 
-        # si hay errores, los mostramos, de lo contrario, continuamos
-        if self.errors:
-            errores_str = "\n".join(set(errores))
-            raise Exception(errores_str)
+            # si hay errores, los mostramos, de lo contrario, continuamos
+            if self.errors:
+                errores_str = "\n".join(set(errores))
+                raise Exception(errores_str)
+            
+            # si no hay errores, continuamos
+
+            #obtenemos los tokens y verificamos que esten en el yalex
+            self.tokens = self.getTokens()
+            self.check_tokens(self.tokens)
+
+            #obtenemos la gramatica y la aumentamos
+            self.grammar = self.defineGrammar()
+            self.increasedGrammar = self.increaseGrammar(self.grammar)
+
+            #obtenemos el primer conjunto y con esto el automata LR(0)
+            self.firstSet(self.increasedGrammar)
+
+            self.grammar.first = self.compute_first(self.grammar.productions)
+            self.grammar.follow = self.compute_follow(self.grammar.productions)
+
+            #construimos la tabla SLR
+            self.actionTable, self.goToTable = self.createSLRTable()
+            self.drawTable()
         
-        # si no hay errores, continuamos
-
-        #obtenemos los tokens y verificamos que esten en el yalex
-        self.tokens = self.getTokens()
-        self.check_tokens(self.tokens)
-
-        #obtenemos la gramatica y la aumentamos
-        self.grammar = self.defineGrammar()
-        self.increasedGrammar = self.increaseGrammar(self.grammar)
-
-        #obtenemos el primer conjunto y con esto el automata LR(0)
-        self.firstSet(self.increasedGrammar)
-
-        self.grammar.first = self.compute_first(self.grammar.productions)
-        self.grammar.follow = self.compute_follow(self.grammar.productions)
-
-        #construimos la tabla SLR
-        self.actionTable, self.goToTable = self.createSLRTable()
-        self.drawTable()
+        else:
+            self.generateOutput(self.outputname)
 
     def detectErrors(self):
         errors = []
@@ -635,3 +639,138 @@ class YAPar:
         # Print the table
         print()
         print(table.get_string(title="SLR TABLE"))
+
+    def generateOutput(self, outputName):
+        pythonCode = f"""#importamos la clase de Yalex para poder obtener toda su informacion
+from YAPar import *
+
+#creamos el objeto de la clase YALex y compilamos el archivo
+yapar = YAPar('{self.filename}')
+yapar.compiler()
+
+def main():
+
+    #input del archivo de entrada
+    # archivo = input('\\nIngrese el nombre del archivo a parsear: ')
+
+    #creamos la variable del archivo
+    # texto = 'YAPInputs/'+archivo+'.txt'
+
+    #creamos la variable del archivo
+    texto = 'YAPInputs/input1.txt'
+
+    #leemos el archivo de texto
+    with open(texto, 'r') as file:  
+        data = file.read().split()
+
+    #llamar a la funcion de parseo
+    parseo(data)
+    
+def parseo(data):
+    # Definition of variables
+    stack = []
+    symbols = []
+    actionTable = yapar.actionTable
+    gotoTable = yapar.goToTable
+    grammar = yapar.grammar
+    stack.append(next(iter(actionTable)))
+    production_numbers = enumerateGrammar(grammar.productions)
+
+    # Start the parsing loop
+    going = True
+    contador = 0
+    print("\\n" + "-" * 60 + " PARSEO SLR " + "-" * 60)
+    print(f"{{'ITERACION':<10}} {{'PILA':<20}} {{'SIMBOLOS':<35}} {{'ENTRADA':<35}} {{'ACCION':<35}}")
+    print("-" * 132)
+    while going:
+        contador += 1
+        
+        # Obtain the elements to verify
+        lastStack = stack[-1]
+        firstData = data[0]
+
+        # Check if it is accepted or not
+        if actionTable.get(lastStack, {{}}).get(firstData) == 'acc':
+            print(f"\\nPARSEO EXITOSO!")
+            going = False
+            break
+
+        # Check if it is a shift
+        elif actionTable.get(lastStack, {{}}).get(firstData, '\\nerror')[0] == 's':
+            symbols.append(firstData)
+            stack.append(int(actionTable[lastStack][firstData][1:]))
+            data.pop(0)
+            action = 'desplazar'
+            print(f"{{contador:<10}} {{str(stack):<20}} {{str(symbols):<35}} {{str(data):<35}} {{action:<35}}")
+
+        # Check if it is a reduce
+        elif actionTable.get(lastStack, {{}}).get(firstData, '\\nerror')[0] == 'r':
+
+            # Obtain the number of production
+            prodNumber = int(actionTable[lastStack][firstData][1:])
+            for production, number in production_numbers.items():
+                if number == prodNumber:
+                    break
+            else:
+                print("\\nError: numero invalido de produccion")
+                break
+            
+            # Perform the necessary pops
+            prodList = production.split()
+            if len(prodList) > len(stack):
+                print("\\nError: No se puede reducir debido a simbolos insuficientes en la pila")
+                break
+
+            for _ in range(len(prodList)):
+                stack.pop()
+
+            # Obtain the header of the production
+            header = None
+            for key, value in grammar.productions.items():
+                if production in value:
+                    header = key
+                    break
+            else:
+                print("\\nError: Encabezado de produccion no se pudo encontrar")
+                break
+            
+            # Replace the production with the header in symbols
+            prodList = production.split()
+            symbolList = symbols[:]
+            for i in range(len(symbolList)):
+                if symbolList[i:i+len(prodList)] == prodList:
+                    symbolList[i:i+len(prodList)] = [header]
+            symbols = symbolList
+            
+            # Look up the value in goToTable for the production
+            try:
+                stack.append(gotoTable[stack[-1]][header])
+            except KeyError:
+                print("\\nError: Entrada invalida de Ir_A")
+                break
+
+            action = f"reducir mediante {{header}} -> {{production}}"
+            print(f"{{contador:<10}} {{str(stack):<20}} {{str(symbols):<35}} {{str(data):<35}} {{action:<35}}")
+
+        else:
+            print("\\nError: Accion invalida en la tabla")
+            break
+    
+def enumerateGrammar(grammar):
+    production_numbers = {{}}
+
+    count = 1
+    for key, values in grammar.items():
+        for value in values:
+            production_numbers[value] = count
+            count += 1
+    
+    return production_numbers
+    
+
+if __name__ == '__main__':
+    main()
+        """
+      
+        with open(outputName, 'w') as file:
+            file.write(f"{pythonCode}")
