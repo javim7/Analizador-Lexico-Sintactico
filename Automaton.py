@@ -101,6 +101,21 @@ class DFA:
 
         # agregamos al atributo
         self.states = sorted(states)
+    
+    # funcion para poder obtener los estados del afd
+    def getStates2(self):
+        states = []  # lista vacia para los estados
+
+        # recorremos las transiciones
+        for transition in self.transitions:
+            # vemos si el estado no esta en la lista y lo agregamos en caso no
+            if transition.state.estado not in states:
+                states.append(transition.state)
+            if transition.next_state.estado not in states:
+                states.append(transition.next_state)
+
+        # agregamos al atributo
+        self.states = states
 
      # imprimiumos las transiciones del afn
     def print_dfa(self):

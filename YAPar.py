@@ -1,5 +1,7 @@
 import copy
 import pydot
+import prettytable as pt
+
 from Set import *
 from Drawer import *
 from Grammar import *
@@ -20,6 +22,9 @@ class YAPar:
             self.estados = 0
             self.sets = []
             self.afdLR0 = None
+            self.afdLR02 = None
+            self.actionTable = {}
+            self.goToTable = {}
             self.first = {}
             self.follow = {}
         except FileNotFoundError:
@@ -49,6 +54,10 @@ class YAPar:
 
         self.grammar.first = self.compute_first(self.grammar.productions)
         self.grammar.follow = self.compute_follow(self.grammar.productions)
+
+        #construimos la tabla SLR
+        self.actionTable, self.goToTable = self.createSLRTable()
+        self.drawTable()
 
     def detectErrors(self):
         errors = []
@@ -221,6 +230,7 @@ class YAPar:
         self.estados += 1
         # print(firstSet)
         self.buildAutomaton(firstSet)
+        # self.buildAutomaton2(firstSet)
 
     # Define a function to format the state labels
     def format_label(self, set):
@@ -353,10 +363,10 @@ class YAPar:
             afd.transitions, afd.initial_state, afd.final_states, 'LR(0)')
         afd_drawer.draw(filename='graphs/LR0')
         
-        # afd.print_dfa()
+        afd.print_dfa()
         afd.dfa_info()
 
-        self.afdLR0 = afd
+        self.afdLR02 = afd
         return self.afdLR0
 
     def cerradura(self, I):
@@ -532,5 +542,96 @@ class YAPar:
                             # Terminal symbol
                             continue
         return follow
+    
+    def createSLRTable(self):
+        grammar_productions = self.grammar.productions
+        terminals = self.grammar.terminals
+        nonTerminals = self.grammar.nonTerminals
+        follow = self.grammar.follow
+        lr0 = self.afdLR0
+        augmented_header = self.grammar.initialState + "'"
+        
+        action = {}
+        goTo = {}
 
+        lr0.getStates2()
+        for state in lr0.states:
+            state_number = state.estado
 
+            if state_number not in action:
+                action[state_number] = {}
+            if state_number not in goTo:
+                goTo[state_number] = {}
+
+            if state_number == 1:
+                action[state_number]['$'] = 'acc'
+
+            for transition in lr0.transitions:
+                if transition.state == state:
+                    if transition.symbol == '$':
+                        action[state_number]['$'] = 'acc'
+
+                    elif transition.symbol in terminals:
+                        action[state_number][transition.symbol] = 's' + str(transition.next_state.estado)
+
+                    elif transition.symbol in nonTerminals:
+                        goTo[state_number][transition.symbol] = transition.next_state.estado
+
+            for production_key, production_values in state.productions.items():
+                if production_key != augmented_header:  # Check if production key is not the augmented header
+                    for production in production_values:
+                        if production.endswith('.'):
+                            # print(production_key, ' -> ', production)
+                            key = production_key
+                            follow_set = follow[key]
+                            reduced_production = production[:-1]
+                            production_numbers = {}
+
+                            count = 1
+                            for key, values in grammar_productions.items():
+                                for value in values:
+                                    production_numbers[value] = count
+                                    count += 1
+
+                            production_number = production_numbers[reduced_production]
+                            
+                            for terminal in follow_set:
+                                action[state_number][terminal] = 'r' + str(production_number)
+
+        return action, goTo
+
+    def drawTable(self):
+        # Get the list of terminals and non-terminals
+        terminals = self.grammar.terminals.copy()
+        terminals.append('$')
+        nonTerminals = self.grammar.nonTerminals
+
+        # Determine the width of each column
+        estado_width = max(len(str(state)) for state in self.actionTable.keys()) + 2
+        acciones_width = max(len(term) for term in terminals) + 2
+        ir_a_width = max(len(nt) for nt in nonTerminals) + 2
+
+        # Create the table
+        table = pt.PrettyTable()
+        table.field_names = ['estado', 'acciones'] + terminals + ['', 'ir_A'] + nonTerminals
+
+        # Add the rows to the table
+        for state, actions in self.actionTable.items():
+            action_values = [actions.get(term, '') for term in terminals]
+            goto_values = [self.goToTable[state].get(nt, '') for nt in nonTerminals]
+
+            row = [state, ''] + action_values + ['', ''] + goto_values
+            table.add_row(row)
+
+        # Set column alignments
+        table.align = 'l'
+
+        # Set column alignments for subcolumns
+        table.align['estado'] = 'c'
+        table.align['acciones'] = 'c'
+        table.align[''] = 'c'
+        table.align['ir_A'] = 'c'
+
+        # Print the table
+        print()
+        print(table.get_string(title="SLR TABLE"))

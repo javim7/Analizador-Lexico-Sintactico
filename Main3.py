@@ -12,7 +12,7 @@ if __name__ == '__main__':
     ]
 
     #obtenemos la informacion del comando
-    commandInfo = comandos[1].split(" ")
+    commandInfo = comandos[0].split(" ")
 
     yapFile = 'YAPFiles/' +commandInfo[1]
     fileToGenerate = [5]
@@ -22,4 +22,4 @@ if __name__ == '__main__':
     yapar = YAPar(yapFile, fileToGenerate)
 
     yapar.compiler()
-    print(yapar.grammar)
+    # print(yapar.grammar)
