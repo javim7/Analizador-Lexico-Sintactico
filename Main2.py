@@ -1,4 +1,5 @@
 from YALex import *
+import subprocess
 
 '''
 Programa Main2: Encargado de correr el programa del proyecto 2
@@ -28,5 +29,8 @@ if __name__ == '__main__':
     yalex = YALex(yalFile, fileToGenerate)
     
     yalex.compiler()
+
+    #corremos los archivos generados
+    subprocess.run(["python", fileToGenerate])
 
     

@@ -2,7 +2,8 @@
 from YAPar import *
 
 #creamos el objeto de la clase YALex y compilamos el archivo
-yapar = YAPar('YAPFiles/yap1.yalp')
+yapar = YAPar('YAPFiles/yap3.yalp')
+
 yapar.compiler()
 
 def main():
@@ -27,6 +28,8 @@ def parseo(data):
     # Definition of variables
     stack = []
     symbols = []
+    errorList = []
+    dataCopy = data.copy()
     actionTable = yapar.actionTable
     gotoTable = yapar.goToTable
     grammar = yapar.grammar
@@ -48,7 +51,6 @@ def parseo(data):
 
         # Check if it is accepted or not
         if actionTable.get(lastStack, {}).get(firstData) == 'acc':
-            print(f"\nPARSEO EXITOSO!")
             going = False
             break
 
@@ -69,13 +71,15 @@ def parseo(data):
                 if number == prodNumber:
                     break
             else:
-                print("\nError: numero invalido de produccion")
+                # print("\nError: numero invalido de produccion")
+                errorList.append("Error: numero '" + number + "' invalido de produccion")
                 break
             
             # Perform the necessary pops
             prodList = production.split()
             if len(prodList) > len(stack):
-                print("\nError: No se puede reducir debido a simbolos insuficientes en la pila")
+                # print("\nError: No se puede reducir debido a simbolos insuficientes en la pila")
+                errorList.append("Error: No se puede realizar la reduccion 'r" + prodNumber + "' debido a simbolos insuficientes en la pila")
                 break
 
             for _ in range(len(prodList)):
@@ -88,7 +92,8 @@ def parseo(data):
                     header = key
                     break
             else:
-                print("\nError: Encabezado de produccion no se pudo encontrar")
+                # print("\nError: Encabezado de produccion no se pudo encontrar")
+                errorList.append("Error: Encabezado de produccion '"+ header + "' no se pudo encontrar")
                 break
             
             # Replace the production with the header in symbols
@@ -103,15 +108,27 @@ def parseo(data):
             try:
                 stack.append(gotoTable[stack[-1]][header])
             except KeyError:
-                print("\nError: Entrada invalida de Ir_A")
+                # print("\nError: Entrada invalida de Ir_A")
+                errorList.append("Error: Entrada '("+ str(lastStack) +"," + firstData+ ")' invalida en tabla Ir_A")
                 break
 
             action = f"reducir mediante {header} -> {production}"
             print(f"{contador:<10} {str(stack):<20} {str(symbols):<35} {str(data):<35} {action:<35}")
 
         else:
-            print("\nError: Accion invalida en la tabla")
+            # print("\nError: Accion vacia en la tabla")
+            errorList.append("Error: Accion '("+ str(lastStack) +"," + firstData+ ")' vacia/inexistente en la tabla")
             break
+    
+    print("-" * 132)
+    if not errorList:
+        print(f"\n-----PARSEO EXITOSO!-----")
+        for string in dataCopy:
+            print(f"{string:<6} -> Accepted")
+    else:
+        print(f"\n-----PARSEO FALLIDO!-----")
+        for error in errorList:
+            print(error)
     
 def enumerateGrammar(grammar):
     production_numbers = {}
@@ -127,4 +144,3 @@ def enumerateGrammar(grammar):
 
 if __name__ == '__main__':
     main()
-        

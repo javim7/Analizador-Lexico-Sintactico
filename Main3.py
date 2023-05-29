@@ -1,4 +1,5 @@
 from YAPar import *
+import subprocess
 
 '''
 Programa Main3: Encargado de correr el programa del proyecto 3
@@ -8,7 +9,8 @@ if __name__ == '__main__':
 
     comandos = [
         "yapar yap1.yalp -l thelexer.py -o theparser.py", #0
-        "yapar yap2.yalp -l thelexer.py -o theparser.py"  #1
+        "yapar yap2.yalp -l thelexer.py -o theparser.py",  #1
+        "yapar yap3.yalp -l thelexer.py -o theparser.py"  #2
     ]
 
     #obtenemos la informacion del comando
@@ -16,7 +18,6 @@ if __name__ == '__main__':
 
     yapFile = 'YAPFiles/' +commandInfo[1]
     fileToGenerate = commandInfo[5]
-    print(fileToGenerate)   
     lexerFile = commandInfo[3]
 
     # instanciamos yapar
@@ -24,3 +25,7 @@ if __name__ == '__main__':
 
     yapar.compiler()
     # print(yapar.grammar)
+
+    #corremos los archivos generados
+    # subprocess.run(["python", lexerFile])
+    subprocess.run(["python", fileToGenerate])

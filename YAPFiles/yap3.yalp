@@ -1,0 +1,25 @@
+/* Non-SLR Grammar: */
+/* E -> E + E | T */
+/* T -> T * T | F */
+/* F -> ( E ) | id */
+
+%token ID
+%token PLUS
+%token TIMES
+%token LPAREN RPAREN
+%token WS
+IGNORE WS
+
+%%
+expression:
+    expression PLUS expression
+    | term
+;
+term:
+    term TIMES term
+    | factor
+;
+factor:
+    LPAREN expression RPAREN
+    | ID
+;
