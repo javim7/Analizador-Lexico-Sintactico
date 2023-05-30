@@ -27,5 +27,5 @@ if __name__ == '__main__':
     # print(yapar.grammar)
 
     #corremos los archivos generados
-    # subprocess.run(["python", lexerFile])
+    subprocess.run(["python", lexerFile])
     subprocess.run(["python", fileToGenerate])

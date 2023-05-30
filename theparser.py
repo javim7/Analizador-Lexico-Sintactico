@@ -2,7 +2,7 @@
 from YAPar import *
 
 #creamos el objeto de la clase YALex y compilamos el archivo
-yapar = YAPar('YAPFiles/yap3.yalp')
+yapar = YAPar('YAPFiles/yap1.yalp')
 
 yapar.compiler()
 
