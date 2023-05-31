@@ -310,7 +310,7 @@ class YAPar:
         afd.final_states.append('accept')
 
         # afd.print_dfa()
-        afd.dfa_info()
+        # afd.dfa_info()
 
         self.afdLR0 = afd
         return self.afdLR0
@@ -673,6 +673,7 @@ def main():
     with open(texto, 'r') as file:  
         data = file.read().split()
 
+    data.append('$')
     #llamar a la funcion de parseo
     parseo(data)
     

@@ -21,6 +21,7 @@ def main():
     with open(texto, 'r') as file:  
         data = file.read().split()
 
+    data.append('$')
     #llamar a la funcion de parseo
     parseo(data)
     
