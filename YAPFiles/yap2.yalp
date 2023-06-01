@@ -1,37 +1,36 @@
-/* Gramatica SLR: */
-/* E -> TE' */
-/* E' -> + TE' | ε */
-/* T -> FT' */
-/* T' -> *FT' | ε */
+/* Nueva Gramática SLR: */
+/* S -> E */
+/* E -> T E2 */
+/* E2 -> + T E2 | ε */
+/* T -> F T2 */
+/* T2 -> * F T2 | ε */
 /* F -> ( E ) | id */
 
 %token ID
+%token PLUS
+%token TIMES
 %token LPAREN RPAREN
-%token PLUS TIMES
 %token WS
 IGNORE WS
 
-
 %%
-
+start:
+    expression
+;
 expression:
-    term expression'
+    term expression2
 ;
-
-expression':
-    PLUS term expression'
-    | EPSILON
+expression2:
+    PLUS term expression2
+    |
 ;
-
 term:
-    factor term'
+    factor term2
 ;
-
-term':
-    TIMES factor term'
-    | EPSILON
+term2:
+    TIMES factor term2
+    |
 ;
-
 factor:
     LPAREN expression RPAREN
     | ID

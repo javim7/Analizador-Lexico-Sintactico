@@ -9,13 +9,13 @@ yapar.compiler()
 def main():
 
     #input del archivo de entrada
-    # archivo = input('\nIngrese el nombre del archivo a parsear: ')
+    archivo = input('\nIngrese el nombre del archivo a parsear: ')
 
     #creamos la variable del archivo
-    # texto = 'YAPInputs/'+archivo+'.txt'
+    texto = 'YAPInputs/'+archivo+'.txt'
 
     #creamos la variable del archivo
-    texto = 'YAPInputs/input1.txt'
+    # texto = 'YAPInputs/input1.txt'
 
     #leemos el archivo de texto
     with open(texto, 'r') as file:  
