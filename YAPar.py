@@ -771,7 +771,8 @@ def parseo(data):
         else:
             # print("\\nError: Accion vacia en la tabla")
             errorList.append("Error: Accion '("+ str(lastStack) +"," + firstData+ ")' vacia/inexistente en la tabla")
-            break
+            symbols.append(firstData)
+            data.pop(0)
     
     print("-" * 132)
     if not errorList:

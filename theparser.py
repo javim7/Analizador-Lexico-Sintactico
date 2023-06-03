@@ -2,7 +2,7 @@
 from YAPar import *
 
 #creamos el objeto de la clase YALex y compilamos el archivo
-yapar = YAPar('YAPFiles/yap1.yalp')
+yapar = YAPar('YAPFiles/yap3.yalp')
 
 yapar.compiler()
 
@@ -119,7 +119,8 @@ def parseo(data):
         else:
             # print("\nError: Accion vacia en la tabla")
             errorList.append("Error: Accion '("+ str(lastStack) +"," + firstData+ ")' vacia/inexistente en la tabla")
-            break
+            symbols.append(firstData)
+            data.pop(0)
     
     print("-" * 132)
     if not errorList:

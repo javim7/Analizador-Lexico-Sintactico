@@ -3,17 +3,23 @@
 let delimitador = [' ''\t''\n']
 let WS = delimitador+
 let digit = ['0'-'9']
+let NUMBER = digit+
 let letter = ['a'-'z''A'-'Z']
 let ID = letter(letter|digit)*
 let PLUS = '+'
 let TIMES = '*'
 let LPAREN = '('
 let RPAREN = ')'
+let MINUS = '-'
+let DIV = '/'
 
 rule tokens = 
     WS {print("WS")}
     | ID {print("ID")}
     | PLUS {print("PLUS")}
     | TIMES {print("TIMES")}
+    | MINUS {print("MINUS")}
     | LPAREN {print("LPAREN")}
     | RPAREN {print("RPAREN")}
+    | DIV {print("DIV")}
+    | NUMBER {print("NUMBER")}

@@ -14,7 +14,7 @@ if __name__ == '__main__':
     ]
 
     #obtenemos la informacion del comando
-    commandInfo = comandos[0].split(" ")
+    commandInfo = comandos[2].split(" ")
 
     yapFile = 'YAPFiles/' +commandInfo[1]
     fileToGenerate = commandInfo[5]

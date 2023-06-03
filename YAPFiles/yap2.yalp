@@ -1,37 +1,33 @@
-/* Nueva Gramática SLR: */
-/* S -> E */
-/* E -> T E2 */
-/* E2 -> + T E2 | ε */
-/* T -> F T2 */
-/* T2 -> * F T2 | ε */
-/* F -> ( E ) | id */
+/* Configuración del parser para Gramática No.2 */
+/* Sigue la gramática SLR: */
+/* E → E + T | E - T | T */
+/* T → T ∗ F | T / F | F */
+/* F → ( E ) | id | number */
 
 %token ID
 %token PLUS
+%token MINUS
 %token TIMES
+%token DIV
+%token NUMBER
 %token LPAREN RPAREN
-%token WS
-IGNORE WS
+%token WHITESPACE
+IGNORE WHITESPACE
 
 %%
-start:
-    expression
-;
+
 expression:
-    term expression2
-;
-expression2:
-    PLUS term expression2
-    |
+    expression PLUS term
+  | expression MINUS term
+  | term
 ;
 term:
-    factor term2
-;
-term2:
-    TIMES factor term2
-    |
+    term TIMES factor
+  | term DIV factor
+  | factor
 ;
 factor:
     LPAREN expression RPAREN
-    | ID
+  | ID
+  | NUMBER
 ;
